@@ -58,13 +58,13 @@ class Host:
   Insert a new listing into the listing table
   """
   @staticmethod
-  def insert_one_listing (host_id, address, postalCode, long, lat, price):
+  def insert_one_listing (host_id, address, city, country, postalCode, long, lat, price):
     cursor = Host.mysql.cursor()
     query = '''
-      INSERT INTO Listings (hostId, address, postalCode, longitude, latitude, price)
-      VALUES (%s, %s, %s, %s, %s, %s)
+      INSERT INTO Listings (hostId, address, city, country, postalCode, longitude, latitude, price)
+      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     '''
-    values = (host_id, address, postalCode, long, lat, price)
+    values = (host_id, address, city, country, postalCode, long, lat, price)
     cursor.execute(query, values)
     cursor.close()
     Host.mysql.commit()

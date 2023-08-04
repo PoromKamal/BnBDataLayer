@@ -74,6 +74,8 @@ create_listing_table = '''
     id INT AUTO_INCREMENT,
     hostId INT NOT NULL,
     address VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
     postalCode VARCHAR(6) NOT NULL,
     longitude DECIMAL(9, 6) NOT NULL,
     latitude DECIMAL(8, 6) NOT NULL,
