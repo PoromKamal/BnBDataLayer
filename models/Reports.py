@@ -90,3 +90,68 @@ class Reports:
       print(row)
     cursor.close()
     return result
+
+  def get_all_distinct_countries ():
+    cursor = Reports.mysql.cursor()
+    query = '''
+      SELECT DISTINCT country
+      FROM Listings
+    '''
+    cursor.execute(query)
+    result = cursor.fetchall()
+    cursor.close()
+    return result
+
+  def get_all_cities():
+    cursor = Reports.mysql.cursor()
+    query = '''
+      SELECT DISTINCT city, country
+      FROM Listings
+    '''
+    cursor.execute(query)
+    result = cursor.fetchall()
+    cursor.close()
+    return result
+
+  @staticmethod
+  def get_hosts_ranking_by_listing_count_by_country (refineByCity=False):
+    cursor = Reports.mysql.cursor()
+    result = None
+    if(refineByCity):
+      allCities = Reports.get_all_cities()
+      for city in allCities:
+        query = '''
+          SELECT H.*, COUNT(*) as listingCount
+          FROM Listings L
+          INNER JOIN Hosts H ON H.id = L.hostId
+          WHERE L.city = %s
+          GROUP BY H.id
+          ORDER BY listingCount DESC
+        '''
+        values = (city[0],)
+        cursor.execute(query, values)
+        result = cursor.fetchall()
+        print(f'City, Country: {city[0], city[1]}')
+        for row in result:
+          print(row)
+        print('=============')
+    else:
+      allCountries = Reports.get_all_distinct_countries()
+      for country in allCountries:
+        query = '''
+          SELECT H.*, COUNT(*) as listingCount
+          FROM Listings L
+          INNER JOIN Hosts H ON H.id = L.hostId
+          WHERE L.country = %s
+          GROUP BY H.id
+          ORDER BY listingCount DESC
+        '''
+        values = (country[0],)
+        cursor.execute(query, values)
+        result = cursor.fetchall()
+        print(f'Country: {country[0]}')
+        for row in result:
+          print(row)
+        print('=============')
+    cursor.close()
+    return result

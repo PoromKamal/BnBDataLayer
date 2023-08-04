@@ -56,15 +56,20 @@ if __name__ == '__main__':
   setup_database()
   setup_amenities()
   Host.insert_one_host ("Porom", "1999-01-01", "123456789", "1234 Main St",  "Student")
+  Host.insert_one_host ("Sarraf", "1999-01-01", "345678912", "79 Main St",  "Student")
   Renter.insert_one_renter ("Ryan", "2000-01-01", "234567899", "1234 Trail St", "Student")
-  hostId = Host.get_one_host_by_sin("123456789")[0]
-  renterId = Renter.get_one_renter_by_sin("234567899")[0]
+  hostId = Host.get_one_host_by_sin("123456789")
+  sarrafId = Host.get_one_host_by_sin("345678912")
+  renterId = Renter.get_one_renter_by_sin("234567899")
   Host.insert_one_listing (hostId, "1234 Main St", "Toronto", "Canada", "M1C2T2", "33", "-71", "354.00")
   Host.insert_one_listing(hostId, "1234 Secondary St", "Brampton", "Canada", "M1C3T2",
                           "33.06", "-71.06", "3434.00") # ~ 8.71 km away
   Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Canada", "M3C2T2",
                           "33.065", "-71.065", "23.00") # ~ 9.42 km away
-  
+  Host.insert_one_listing(sarrafId, "1234 Fourth St", "Bomanville", "Canada", "M3C7R4",
+                          "33.067", "-71.067", "357.00")
+  Host.insert_one_listing(sarrafId, "1234 Pyramid St", "Cairo", "Egypt", "M3C7R4",
+                          "53.067", "-61.067", "35337.00")
   Host.insert_one_availability (1, "2023-05-01")
   Host.insert_one_availability (1, "2023-05-02")
   Host.insert_one_availability (1, "2023-05-03")
@@ -121,6 +126,8 @@ if __name__ == '__main__':
   Reports.get_total_listings_by_country_and_city()
   print("Total Listings By Country and City And Postal: \n ===================")
   Reports.get_total_listings_by_country_and_city_and_postal()
+  print("Hosts ranking by listing count, per country \n ===================")
+  Reports.get_hosts_ranking_by_listing_count_by_country(True)
   #Renter.search_listings_by_proximity ("33", "-71", "15.0", filterDict, "distance")
   #Renter.search_listings_by_postal_code("M1C2T2", filterDict)
   #Renter.search_listings_by_address("1234 Main St", filterDict)

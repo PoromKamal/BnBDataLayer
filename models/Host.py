@@ -37,7 +37,7 @@ class Host:
     cursor.execute(query, values)
     result = cursor.fetchone()
     cursor.close()
-    return result
+    return result[0]
 
   """
   Remove host from the host table

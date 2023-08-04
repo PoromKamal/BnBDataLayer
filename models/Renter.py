@@ -52,7 +52,7 @@ class Renter:
     cursor.execute(query, values)
     result = cursor.fetchone()
     cursor.close()
-    return result
+    return result[0]
   
   """
     Inserts a booking into the booking table
