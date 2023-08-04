@@ -128,6 +128,8 @@ if __name__ == '__main__':
   Reports.get_total_listings_by_country_and_city_and_postal()
   print("Hosts ranking by listing count, per country \n ===================")
   Reports.get_hosts_ranking_by_listing_count_by_country(True)
+  print("Hosts with 10%%+ listings owned by country")
+  Reports.report_host_monopoly()
   #Renter.search_listings_by_proximity ("33", "-71", "15.0", filterDict, "distance")
   #Renter.search_listings_by_postal_code("M1C2T2", filterDict)
   #Renter.search_listings_by_address("1234 Main St", filterDict)
