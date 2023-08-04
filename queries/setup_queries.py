@@ -74,9 +74,11 @@ create_listing_table = '''
     id INT AUTO_INCREMENT,
     hostId INT NOT NULL,
     address VARCHAR(100) NOT NULL,
+    postalCode VARCHAR(6) NOT NULL,
     longitude DECIMAL(9, 6) NOT NULL,
     latitude DECIMAL(8, 6) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
+    averageRating DECIMAL(2, 1) DEFAULT 0,
     UNIQUE (longitude, latitude, address),
     PRIMARY KEY (id),
     FOREIGN KEY (hostId) REFERENCES Hosts(id)
@@ -150,6 +152,18 @@ create_listing_rating_table = '''
         SIGNAL SQLSTATE '45000'
           SET MESSAGE_TEXT = 'Renter cannot rate this listing';
       END IF;
+    END;
+  CREATE TRIGGER update_listing_average_rating
+    AFTER INSERT ON ListingRatings
+    FOR EACH ROW
+    BEGIN
+      UPDATE Listings
+      SET averageRating = (
+        SELECT AVG(rating)
+        FROM ListingRatings
+        WHERE listing_id = NEW.listing_id
+      )
+      WHERE id = NEW.listing_id;
     END;
 '''
 

@@ -58,13 +58,13 @@ class Host:
   Insert a new listing into the listing table
   """
   @staticmethod
-  def insert_one_listing (host_id, address, long, lat, price):
+  def insert_one_listing (host_id, address, postalCode, long, lat, price):
     cursor = Host.mysql.cursor()
     query = '''
-      INSERT INTO Listings (hostId, address, longitude, latitude, price)
-      VALUES (%s, %s, %s, %s, %s)
+      INSERT INTO Listings (hostId, address, postalCode, longitude, latitude, price)
+      VALUES (%s, %s, %s, %s, %s, %s)
     '''
-    values = (host_id, address, long, lat, price)
+    values = (host_id, address, postalCode, long, lat, price)
     cursor.execute(query, values)
     cursor.close()
     Host.mysql.commit()
@@ -159,3 +159,16 @@ class Host:
     cursor.execute(query, values)
     cursor.close()
     Host.mysql.commit()
+  
+  @staticmethod
+  def get_amenity_id_by_name(name):
+    cursor = Host.mysql.cursor()
+    query = '''
+      SELECT id FROM Amenities
+      WHERE name = %s
+    '''
+    values = (name,)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    cursor.close()
+    return result[0]
