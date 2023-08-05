@@ -174,7 +174,7 @@ class Reports:
           HAVING percentage > 10
           ORDER BY listingCount DESC
         '''
-        values = (city[0],)
+        values = (city[0],city[0])
         cursor.execute(query, values)
         result = cursor.fetchall()
         print(f'City, Country: {city[0], city[1]}')
@@ -202,5 +202,63 @@ class Reports:
         for row in result:
           print(row)
         print('=============')
+    cursor.close()
+    return result
+  
+  @staticmethod
+  def get_rank_renter_by_bookings (timeRange: tuple, refineByCity=False):
+    cursor = Reports.mysql.cursor()
+    result = None
+    if refineByCity:
+      allCities = Reports.get_all_cities()
+      for city in allCities:
+        query = '''
+          SELECT R.*, COUNT(*) as bookingCount
+          FROM Bookings B
+          INNER JOIN Renters R ON R.id = B.renter_id
+          INNER JOIN Listings L ON L.id = B.listing_id
+          WHERE B.start_date >= %s AND B.end_date <= %s AND L.city = %s
+          GROUP BY R.id
+          ORDER BY bookingCount DESC
+        '''
+        values = (timeRange[0], timeRange[1], city[0])
+        cursor.execute(query, values)
+        result = cursor.fetchall()
+        print(f'City, Country: {city[0], city[1]}')
+        for row in result:
+          print(row)
+        print('=============')
+    else:
+      query = '''
+        SELECT R.*, COUNT(*) as bookingCount
+        FROM Bookings B
+        INNER JOIN Renters R ON R.id = B.renter_id
+        WHERE B.start_date >= %s AND B.end_date <= %s
+        GROUP BY R.id
+        ORDER BY bookingCount DESC
+      '''
+      values = timeRange
+      cursor.execute(query, values)
+      result = cursor.fetchall()
+      for row in result:
+        print(row)
+    cursor.close()
+    return result
+
+  @staticmethod
+  def get_renter_with_most_cancellations_ytd ():
+    cursor = Reports.mysql.cursor()
+    query = '''
+      SELECT R.*, COUNT(*) as cancellationCount
+      FROM Cancellations C
+      INNER JOIN Renters R ON R.id = C.renter_id
+      WHERE C.cancellation_date >= (CURDATE() - INTERVAL 1 YEAR)
+      GROUP BY R.id
+      ORDER BY cancellationCount DESC
+    '''
+    cursor.execute(query)
+    result = cursor.fetchall()
+    for row in result:
+      print(row)
     cursor.close()
     return result

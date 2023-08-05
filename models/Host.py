@@ -172,3 +172,40 @@ class Host:
     result = cursor.fetchone()
     cursor.close()
     return result[0]
+  
+  @staticmethod
+  def cancel_booking (booking_id, host_id):
+    cursor = Host.mysql.cursor()
+    #Check if the booking exists and has not already passed
+    query = '''
+      SELECT * FROM Bookings
+      WHERE id = %s AND end_date >= CURDATE() 
+    '''
+    values = (booking_id,)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    if result is None:
+      cursor.close()
+      raise Exception("Booking does not exist or has already passed")
+    
+    #Check if the host is the owner of the listing
+    query = '''
+      SELECT * FROM Listings
+      WHERE id = %s AND hostId = %s
+    '''
+    values = (result[1], host_id)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    if result is None:
+      cursor.close()
+      raise Exception("Host does not own this listing")
+    
+    # insert into cancelled bookings
+    query = '''
+      INSERT INTO Cancellations (booking_id, host_id)
+      VALUES (%s, %s)
+    '''
+    values = (booking_id, host_id)
+    cursor.execute(query, values)
+    cursor.close()
+    Host.mysql.commit()

@@ -237,6 +237,26 @@ create_listing_amenities_table = '''
   );
 '''
 
+create_cancellation_table = '''
+  CREATE TABLE IF NOT EXISTS Cancellations (
+    id INT AUTO_INCREMENT,
+    booking_id INT NOT NULL,
+    host_id INT NULL,
+    renter_id INT NULL,
+    cancellation_date DATE NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (booking_id) REFERENCES Bookings(id)
+      ON DELETE NO ACTION
+      ON UPDATE CASCADE,
+    FOREIGN KEY (host_id) REFERENCES Hosts(id)
+      ON DELETE NO ACTION
+      ON UPDATE CASCADE,
+    FOREIGN KEY (renter_id) REFERENCES Renters(id)
+      ON DELETE NO ACTION
+      ON UPDATE CASCADE
+  );
+'''
+
 setup_queries = [
   restart_database,
   create_renter_table,
@@ -249,5 +269,6 @@ setup_queries = [
   create_renter_payment_info_table,
   create_amenities_table,
   create_amenities_table,
-  create_listing_amenities_table
+  create_listing_amenities_table,
+  create_cancellation_table
 ]

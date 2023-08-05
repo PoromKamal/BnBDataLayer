@@ -302,5 +302,26 @@ class Renter:
       print(row)
     cursor.close()
 
+  @staticmethod
+  def cancel_booking (booking_id, renter_id):
+    cursor = Renter.mysql.cursor()
+    # Check if booking exists
+    query = '''
+      SELECT * FROM Bookings
+      WHERE id = %s AND renter_id = %s AND end_date >= CURDATE()
+    '''
+    values = (booking_id, renter_id)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    if result == None:
+      raise Exception("Booking does not exist or already passed")
 
-    
+    # Add booking to cancellations table
+    query = '''
+      INSERT INTO Cancellations (booking_id, renter_id, cancellation_date)
+      VALUES (%s, %s, CURDATE())
+    '''
+    values = (booking_id, renter_id)
+    cursor.execute(query, values)
+    cursor.close()
+    Renter.mysql.commit()
