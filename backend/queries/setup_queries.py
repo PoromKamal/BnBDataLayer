@@ -43,14 +43,26 @@ restart_database = '''
   USE BnBDb;
 '''
 
+create_authentication_table = '''
+  CREATE TABLE IF NOT EXISTS Authentication (
+    username VARCHAR(100) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    PRIMARY KEY (username)
+  );
+'''
+
 create_renter_table = '''
   CREATE TABLE IF NOT EXISTS Renters (
     id INT AUTO_INCREMENT,
+    username VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     dateOfBirth DATE NOT NULL,
     SIN VARCHAR(9) UNIQUE NOT NULL,
     address VARCHAR(100) NOT NULL,
     occupation VARCHAR(100) NOT NULL,
+    username REFERENCES Authentication(username)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
     UNIQUE (SIN),
     PRIMARY KEY (id)
   );
@@ -59,11 +71,15 @@ create_renter_table = '''
 create_host_table = '''
   CREATE TABLE IF NOT EXISTS Hosts (
     id INT AUTO_INCREMENT,
+    username VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     dateOfBirth DATE NOT NULL,
     SIN VARCHAR(9) UNIQUE NOT NULL,
     address VARCHAR(100) NOT NULL,
     occupation VARCHAR(100) NOT NULL,
+    username REFERENCES Authentication(username)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
     UNIQUE (SIN),
     PRIMARY KEY (id)
   );

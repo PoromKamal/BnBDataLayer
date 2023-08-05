@@ -29,6 +29,10 @@ mysql = mysql.connector.connect(
 def login():
   return "Hello World!"
 
+@app.route("/register")
+def register():
+  
+
 def setup_database():
   cusor = mysql.cursor()
   for query in setup_queries:
@@ -55,6 +59,7 @@ def setup_amenities():
 if __name__ == '__main__':
   setup_database()
   setup_amenities()
+  """
   Host.insert_one_host ("Porom", "1999-01-01", "123456789", "1234 Main St",  "Student")
   Host.insert_one_host ("Sarraf", "1999-01-01", "345678912", "79 Main St",  "Student")
   Renter.insert_one_renter ("Ryan", "2000-01-01", "234567899", "1234 Trail St", "Student")
@@ -140,4 +145,5 @@ if __name__ == '__main__':
   #Renter.search_listings_by_proximity ("33", "-71", "15.0", filterDict, "distance")
   #Renter.search_listings_by_postal_code("M1C2T2", filterDict)
   #Renter.search_listings_by_address("1234 Main St", filterDict)
+  """
   app.run(host="localhost", port=5000)
