@@ -60,7 +60,7 @@ create_renter_table = '''
     SIN VARCHAR(9) UNIQUE NOT NULL,
     address VARCHAR(100) NOT NULL,
     occupation VARCHAR(100) NOT NULL,
-    username REFERENCES Authentication(username)
+    FOREIGN KEY (username) REFERENCES Authentication(username)
       ON DELETE CASCADE
       ON UPDATE CASCADE,
     UNIQUE (SIN),
@@ -77,7 +77,7 @@ create_host_table = '''
     SIN VARCHAR(9) UNIQUE NOT NULL,
     address VARCHAR(100) NOT NULL,
     occupation VARCHAR(100) NOT NULL,
-    username REFERENCES Authentication(username)
+    FOREIGN KEY (username) REFERENCES Authentication(username)
       ON DELETE CASCADE
       ON UPDATE CASCADE,
     UNIQUE (SIN),
@@ -275,6 +275,7 @@ create_cancellation_table = '''
 
 setup_queries = [
   restart_database,
+  create_authentication_table,
   create_renter_table,
   create_host_table,
   create_listing_table,

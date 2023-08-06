@@ -1,8 +1,9 @@
-from flask import Flask
+from flask import Flask, request
 import mysql.connector
 from queries import setup_queries
 from models import Renter, Host, Reports
 from utils.SearchFilters import SearchFilters
+from flask_cors import CORS, cross_origin
 
 Host = Host.Host
 Renter = Renter.Renter
@@ -17,7 +18,7 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'admin'
 app.config['MYSQL_DB'] = 'BnBDb'
-
+CORS(app, resources={r"/*": {"origins": "*"}})
 mysql = mysql.connector.connect(
   host=app.config['MYSQL_HOST'],
   user=app.config['MYSQL_USER'],
@@ -29,9 +30,69 @@ mysql = mysql.connector.connect(
 def login():
   return "Hello World!"
 
-@app.route("/register")
+@app.route("/register", methods=['POST'])
+@cross_origin(origin="*")
 def register():
+  print(request.json)
+  username = request.json['username']
+  password = request.json['password']
+  name = request.json['name']
+  dateOfBirth = request.json['dob']
+  SIN = request.json['sin']
+  address = request.json['address']
+  occupation = request.json['occupation']
+  role = request.json['role']
+  if(role == "renter"):
+    newId = Renter.insert_one_renter(name, username, password, 
+                             dateOfBirth, SIN, address, occupation)
+    if(newId is None):
+      return {"success": False, "message": "Username already exists"}, 400
+    return {"success": True, "message": "Successfully registered", "id": newId}
   
+  if(role == "host"):
+    newId = Host.insert_one_host(name, username, password, 
+                             dateOfBirth, SIN, address, occupation)
+    if(newId is None):
+      return {"success": False, "message": "Username already exists"}, 400
+    
+    # Some dummy listings 
+    Host.insert_one_listing(newId, "1234 Main St", "Toronto", 
+                            "Canada", "M1C2T2", "33", "-71", "354.00")
+    Host.insert_one_listing(newId, "1234 Secondary St", "Brampton",
+                            "Canada", "M1C3T2", "33.06", "-71.06", "3434.00")
+
+    Host.insert_one_listing_amenity (1, 1)
+    Host.insert_one_listing_amenity (1, 3)
+    Host.insert_one_listing_amenity (1, 2)
+        
+    return {"success": True, "message": "Successfully registered", "id": newId}
+  
+  return {"success": False, "message": "Invalid role"}, 400
+
+
+@app.route("/getAllListings", methods=['GET'])
+@cross_origin(origin="*")
+def getAllListings():
+  hostId = request.args.get('hostId')
+  return {"success": True, "listings": Host.get_all_listings_by_host_id(hostId)}
+
+@app.route("/getListingById", methods=['GET'])
+@cross_origin(origin="*")
+def getListingById():
+  listingId = request.args.get('id')
+  return {"success": True, "listing": Host.get_listing_by_id(listingId)}
+
+@app.route("/getAmenitiesByListingId", methods=['GET'])
+@cross_origin(origin="*")
+def getAmenitiesByListingId():
+  listingId = request.args.get('id')
+  return {"success": True, "amenities": Host.get_listing_amenities(listingId)}
+
+@app.route("/getAllAmenities", methods=['GET'])
+@cross_origin(origin="*")
+def getAllAmenities():
+  return {"success": True, "amenities": Host.get_all_amenities()}
+
 
 def setup_database():
   cusor = mysql.cursor()

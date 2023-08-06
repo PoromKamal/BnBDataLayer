@@ -7,8 +7,11 @@ const inter = Inter({ subsets: ['latin'] })
 export default function Home() {
   useEffect(() => {
     const userId = localStorage.getItem('userId')
-    if (!userId)
+    const role = localStorage.getItem('role')
+    if (!(userId || role))
       window.location.href = '/login'
+    else if (role === 'host')
+      window.location.href = '/hostDashboard'
   }, [])
 
   return (

@@ -1,18 +1,33 @@
+import { redirect } from "next/navigation"
 import { useState } from "react"
 
 export default function Register() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [sin, setSin] = useState('')
-  const [name, setName] = useState('')
-  const [dob, setDob] = useState('')
-  const [address, setAddress] = useState('')
-  const [occupation, setOccupation] = useState('')
-  const [role, setRole] = useState('')
+  const [username, setUsername] = useState('test')
+  const [password, setPassword] = useState('test')
+  const [sin, setSin] = useState('123456789')
+  const [name, setName] = useState('test')
+  const [dob, setDob] = useState('2023-08-06')
+  const [address, setAddress] = useState('test')
+  const [occupation, setOccupation] = useState('test')
+  const [role, setRole] = useState('host')
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    console.log(username, password, sin, name, dob, address, occupation, role)
+    const result = await fetch('http://localhost:5000/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({username, password, sin, name, dob, address, occupation, role})
+    })
+    const json = await result.json()
+    if(json.success) {
+      localStorage.setItem('userId', json["id"])
+      localStorage.setItem('role', role)
+      window.location.href = '/'
+    } else {
+      alert('Failed to register!')
+    }
   }
 
   return (

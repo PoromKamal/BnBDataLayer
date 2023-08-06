@@ -1,33 +1,54 @@
 import mysql.connector
+
+from .Auth import Auth
 class Renter:
-  mysql = mysql.connector.connect(
-    host="localhost",
-    user='root',
-    password='admin',
-    database='BnBDb'
-  )
+
+  def get_mysql_connection():
+    return mysql.connector.connect(
+      host="localhost",
+      user='root',
+      password='admin',
+      database='BnBDb'
+    )
 
   """
   Inserts a new renter into the renter table
   """
   @staticmethod
-  def insert_one_renter(name, dateOfBirth, SIN, address, occupation):
-    cursor = Renter.mysql.cursor()
+  def insert_one_renter(name, username, password, dateOfBirth, SIN, address, occupation):
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
+    if(not Auth.register_user(username, password)):
+      cursor.close()
+      return None
+    
     query = '''
-      INSERT INTO Renters (name, dateOfBirth, SIN, address, occupation)
-      VALUES (%s, %s, %s, %s, %s)
+      INSERT INTO Renters (name, username, dateOfBirth, SIN, address, occupation)
+      VALUES (%s, %s, %s, %s, %s, %s)
     '''
-    values = (name, dateOfBirth, SIN, address, occupation)
+    values = (name, username, dateOfBirth, SIN, address, occupation)
     cursor.execute(query, values)
+
+    # Get the newly created renter's id
+    query = '''
+      SELECT id FROM Renters
+      WHERE SIN = %s
+    '''
+    values = (SIN,)
+    cursor.execute(query, values)
+    renter_id = cursor.fetchone()[0]
     cursor.close()
-    Renter.mysql.commit()
+    mysqlConn.commit()
+    mysqlConn.close()
+    return renter_id
 
   """
   Removes a renter from the renter table
   """
   @staticmethod
   def remove_one_renter(renter_id):
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     query = '''
       DELETE FROM Renters
       WHERE id = %s
@@ -35,7 +56,8 @@ class Renter:
     values = (renter_id,)
     cursor.execute(query, values)
     cursor.close()
-    Renter.mysql.commit()
+    mysqlConn.commit()
+    mysqlConn.close()
 
   """
   Returns a renter from the renter table
@@ -43,7 +65,8 @@ class Renter:
   """
   @staticmethod
   def get_one_renter_by_sin (SIN):
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     query = '''
       SELECT * FROM Renters
       WHERE SIN = %s
@@ -52,6 +75,7 @@ class Renter:
     cursor.execute(query, values)
     result = cursor.fetchone()
     cursor.close()
+    mysqlConn.close()
     return result[0]
   
   """
@@ -60,7 +84,8 @@ class Renter:
   """
   @staticmethod
   def insert_one_booking (listing_id, renter_id, start_date, end_date):
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     # TODO: Check if already booked
     # TODO: Check if dates in {start_date, end_date} is available
     query = '''
@@ -70,14 +95,16 @@ class Renter:
     values = (listing_id, renter_id, start_date, end_date)
     cursor.execute(query, values)
     cursor.close()
-    Renter.mysql.commit()
+    mysqlConn.commit()
+    mysqlConn.close()
 
   """
     Removes a booking from the booking table
   """
   @staticmethod
   def remove_one_booking (booking_id):
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     query = '''
       DELETE FROM Bookings
       WHERE id = %s
@@ -85,7 +112,8 @@ class Renter:
     values = (booking_id)
     cursor.execute(query, values)
     cursor.close()
-    Renter.mysql.commit()
+    mysqlConn.commit()
+    mysqlConn.close()
 
   """
   Inserts a listing rating into the listing rating table
@@ -93,7 +121,8 @@ class Renter:
   """
   @staticmethod
   def insert_one_listing_rating(renter_id, listing_id, rating, comment):
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     query = '''
       INSERT INTO ListingRatings (renter_id, listing_id, rating, comment)
       VALUES (%s, %s, %s, %s)
@@ -101,14 +130,16 @@ class Renter:
     values = (renter_id, listing_id, rating, comment)
     cursor.execute(query, values)
     cursor.close()
-    Renter.mysql.commit()
+    mysqlConn.commit()
+    mysqlConn.close()
   
   """
   Removes a listing rating from the listing rating table
   """
   @staticmethod
   def delete_one_listing_rating (rating_id):
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     query = '''
       DELETE FROM ListingRatings
       WHERE id = %s
@@ -116,17 +147,20 @@ class Renter:
     values = (rating_id)
     cursor.execute(query, values)
     cursor.close()
-    Renter.mysql.commit()
+    mysqlConn.commit()
+    mysqlConn.close()
   
   @staticmethod
   def get_all_listings():
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     query = '''
       SELECT * FROM Listings
     '''
     cursor.execute(query)
     result = cursor.fetchall()
     cursor.close()
+    mysqlConn.close()
     return result
   
   LONG_LAT_PROXIMITY_SEARCH_QUERY_BASE = '''
@@ -217,13 +251,15 @@ class Renter:
                                         filters, order_by)
     #print(query)
     #print(values)
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     cursor.execute(query, values)
     result = cursor.fetchall()
     # print out the results
     for row in result:
       print(row)
     cursor.close()
+    mysqlConn.close()
     return result
 
   def build_search_query(base_query, baseValues, filters):
@@ -279,13 +315,15 @@ class Renter:
     
     [query, values] = \
       Renter.build_search_query(base_query, baseValues, filters)
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     cursor.execute(query, values)
     result = cursor.fetchall()
     for row in result:
       print(row)
     cursor.close()
-  
+    mysqlConn.close()
+
   @staticmethod
   def search_listings_by_address (address, filters):
     base_query = '''
@@ -295,16 +333,20 @@ class Renter:
     base_values = (address,)
     [query, values] = \
       Renter.build_search_query(base_query, base_values, filters)
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     cursor.execute(query, values)
     result = cursor.fetchall()
     for row in result:
       print(row)
     cursor.close()
+    mysqlConn.close()
+
 
   @staticmethod
   def cancel_booking (booking_id, renter_id):
-    cursor = Renter.mysql.cursor()
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
     # Check if booking exists
     query = '''
       SELECT * FROM Bookings
@@ -324,4 +366,5 @@ class Renter:
     values = (booking_id, renter_id)
     cursor.execute(query, values)
     cursor.close()
-    Renter.mysql.commit()
+    mysqlConn.commit()
+    mysqlConn.close()
