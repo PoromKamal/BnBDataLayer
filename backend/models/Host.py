@@ -83,6 +83,19 @@ class Host:
   def insert_one_listing (host_id, address, city, country, postalCode, long, lat, price):
     mysqlConn = Host.get_mysql_connection()
     cursor = mysqlConn.cursor()
+    # Check if listing exists at address, long, lat
+    query = '''
+      SELECT * FROM Listings
+      WHERE address = %s AND longitude = %s AND latitude = %s
+    '''
+    values = (address, long, lat)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    if result is not None:
+      cursor.close()
+      mysqlConn.close()
+      return False
+
     query = '''
       INSERT INTO Listings (hostId, address, city, country, postalCode, longitude, latitude, price)
       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -92,6 +105,7 @@ class Host:
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True
 
   @staticmethod
   def get_all_listings_by_host_id(host_id):

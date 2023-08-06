@@ -14,8 +14,6 @@ export default function HostDashboard(){
       <h1>Welcome {username}</h1>
         <a href="/hostListings"
           className="border-solid border-2 rounded-md p-1">My Listings</a>
-        <a href="/hostBookings"
-          className="border-solid border-2 rounded-md p-1">My Bookings</a>
         <a className="border-solid border-2 rounded-md p-1">My Reviews</a>
         <button onClick={() => {handleLogout()}}
           className="border-solid border-2 rounded-md p-1">Logout</button>

@@ -313,6 +313,13 @@ export default function Listing() {
         }
       </div>
 
+      <div>
+        <button onClick={()=>{window.location.href = '/hostListings'}}
+          className="border-solid border-black border-2 rounded-md p-1">
+          Back
+        </button>
+      </div>
+
     </div>)
 
 }

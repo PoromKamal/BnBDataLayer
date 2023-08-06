@@ -128,6 +128,24 @@ def insertAvailabilities():
   
   return {"success": True, "message": "Temp"}
 
+
+@app.route("/insertListing", methods=['POST'])
+@cross_origin(origin="*")
+def insertListing():
+  hostId = request.json['hostId']
+  address = request.json['address']
+  city = request.json['city']
+  country = request.json['country']
+  postalCode = request.json['postalCode']
+  latitude = request.json['latitude']
+  longitude = request.json['longitude']
+  price = request.json['price']
+  result = Host.insert_one_listing(hostId, address, city, country, 
+                                   postalCode, latitude, longitude, price)
+  if not result:
+    return {"success": False, "message": "Listing already exists"}, 400
+  return {"success": True, "message": "Listing added successfully"}
+
 @app.route("/getAvailabilitiesByListingId", methods=['GET'])
 @cross_origin(origin="*")
 def getAvailabilitiesByListingId():
