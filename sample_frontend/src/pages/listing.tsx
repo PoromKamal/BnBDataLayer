@@ -1,6 +1,7 @@
 import { type } from "os"
 import React, { useEffect } from "react"
-import Select from 'react-select'
+import Select, { ActionMeta, MultiValue } from 'react-select'
+import { ValueType } from "tailwindcss/types/config"
 
 export default function Listing() {
   const [listing, setListing] = React.useState({address: '', city: '', 
@@ -12,6 +13,13 @@ export default function Listing() {
   const [reviews, setReviews] = React.useState([])
   const [bookings, setBookings] = React.useState([])
   const [availabilities, setAvailabilities] = React.useState([])
+  const [newAvailability, setNewAvailability] = React.useState({startDate: '', endDate: ''})
+
+  const handleChangeAmenities = (newValue: MultiValue<{ value: any; label: any; }>, 
+      actionMeta: ActionMeta<{ value: any; label: any; }>) => {
+    // TODO: Update amenities for the listing
+  }
+
   useEffect(() => {
 
     const fetchData = async () => {
@@ -53,14 +61,18 @@ export default function Listing() {
 
   const renderAmenityDropDown = () => {
     return (
-      <Select
-        isMulti
-        name="amenities"
-        defaultValue={amenities}
-        options={allAmenities}
-        className="basic-multi-select"
-        classNamePrefix="select"
-      />
+      <div className="m-5">
+        <Select
+          isMulti
+          name="amenities"
+          defaultValue={amenities}
+          options={allAmenities}
+          onChange={handleChangeAmenities}
+          className="basic-multi-select"
+          classNamePrefix="select"
+        />
+      </div>
+      
     )
   }
 
@@ -74,26 +86,47 @@ export default function Listing() {
 
   const bookingCard = (bookingId: string, renterUsername: string, 
                     startDate: string, endDate: string, pricePaid: string) => 
-  (<div className="flex flex-col">
-    <div>
-      Renter: {renterUsername}
-    </div>
+  (
+    <div className="flex flex-col">
+      <div>
+        Renter: {renterUsername}
+      </div>
 
-    <div className="flex gap-2 p-1">
-      <div>
-        Start Date: {startDate}
+      <div className="flex gap-2 p-1">
+        <div>
+          Start Date: {startDate}
+        </div>
+        <div>
+          End Date: {endDate}
+        </div>
       </div>
       <div>
-        End Date: {endDate}
+        Price Paid: {pricePaid}
       </div>
+      <button onClick={()=>{cancelBooking(bookingId)}} >
+        Cancel Booking
+      </button>
     </div>
-    <div>
-      Price Paid: {pricePaid}
-    </div>
-    <button onClick={()=>{cancelBooking(bookingId)}} >
-      Cancel Booking
-    </button>
-  </div>)
+  )
+
+  const handleAddAvailability = async () => {
+    // Check start date is before end date
+    console.log(newAvailability)
+    if(newAvailability.startDate > newAvailability.endDate) {
+      alert('Start date must be before end date')
+      return
+    }
+
+    const sendData = fetch('http://localhost:5000/insertAvailabilities', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({listingId: listingId, 
+        startDate: newAvailability.startDate, 
+        endDate: newAvailability.endDate})
+    })
+  }
 
   return(
     <div className="flex flex-col justify-center items-center">
@@ -134,6 +167,27 @@ export default function Listing() {
 
       <div>
         Reviews:
+      </div>
+
+      <div className="flex flex-col items-center">
+        <div className="flex flex-col border-solid border-black 
+                        border-2 rounded-md p-2">
+          Start Date:
+          <input value={newAvailability.startDate}
+            onChange={(e) => {setNewAvailability({...newAvailability, startDate: e.target.value})}}
+            type="date"/>
+          End Date:
+          <input value={newAvailability.endDate}
+            onChange={(e) => {setNewAvailability({...newAvailability, endDate: e.target.value})}}
+            type="date"/>
+          <button onClick={handleAddAvailability}
+            className="border-solid border-black border-2 rounded-md">
+            Add Availability
+          </button>
+        </div>
+        <div>
+          All Availabilities
+        </div>
       </div>
 
       <div>

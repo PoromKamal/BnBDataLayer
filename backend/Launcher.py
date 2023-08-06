@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, request
 import mysql.connector
 from queries import setup_queries
@@ -92,6 +93,32 @@ def getAmenitiesByListingId():
 @cross_origin(origin="*")
 def getAllAmenities():
   return {"success": True, "amenities": Host.get_all_amenities()}
+
+@app.route("/insertAvailabilities", methods=['POST'])
+@cross_origin(origin="*")
+def insertAvailabilities():
+  # Check if req contains start, and end dates
+  listingId = request.json['listingId']
+  start_date = request.json['startDate']
+  end_date = request.json['endDate']
+  if not start_date or not end_date or not listingId:
+    return {"success": False, "message": "Start and end dates must be provided"}, 400
+  
+  # Aggregate list of dates to insert starting
+  # from start_date to end_date
+  dates = []
+  cur_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+  end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+  while cur_date <= end_date:
+    dates.append(cur_date.strftime("%Y-%m-%d"))
+    cur_date += datetime.timedelta(days=1)
+  
+  # Insert dates
+  for date in dates:
+    Host.insert_one_availability(listingId, date)
+  
+  return {"success": True, "message": "Temp"}
+
 
 
 def setup_database():
