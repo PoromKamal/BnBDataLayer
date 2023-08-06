@@ -256,7 +256,23 @@ class Host:
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True
   
+  @staticmethod
+  def remove_one_listing_amenity (listing_id, amenity_id):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor()
+    query = '''
+      DELETE FROM ListingAmenities
+      WHERE listing_id = %s AND amenity_id = %s
+    '''
+    values = (listing_id, amenity_id)
+    cursor.execute(query, values)
+    cursor.close()
+    mysqlConn.commit()
+    mysqlConn.close()
+    return True
+
   @staticmethod
   def get_amenity_id_by_name(name):
     mysqlConn = Host.get_mysql_connection()

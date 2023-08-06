@@ -15,11 +15,36 @@ export default function Listing() {
   const [availabilities, setAvailabilities] = React.useState([])
   const [newAvailability, setNewAvailability] = React.useState({startDate: '', endDate: ''})
 
-  const handleChangeAmenities = (newValue: MultiValue<{ value: any; label: any; }>, 
+  const handleChangeAmenities = async (newValue: MultiValue<{ value: any; label: any; }>, 
       actionMeta: ActionMeta<{ value: any; label: any; }>) => {
-    // TODO: Update amenities for the listing
-  }
 
+    console.log(newValue[newValue.length-1].value)
+    console.log(actionMeta.action)
+    if(actionMeta.action === 'select-option') {
+      const response = await fetch('http://localhost:5000/addListingAmenity', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({listingId: listingId,
+                            amenityName: newValue[newValue.length-1].value})
+      })
+      const json = await response.json()
+      if(!json.success) {
+        alert('Failed to add amenity')
+        return
+      }
+    } else if(actionMeta.action === 'remove-value') {
+      const response = await fetch('http://localhost:5000/removeListingAmenity', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({listingId: listingId,
+                            amenityName: newValue[newValue.length-1].value})
+      })
+    }
+  }
   const handleRemoveAvail = async (listing_id: string, date: string) => {
     const dateObj = new Date(date)
     const processedDate = dateObj.toISOString().split('T')[0]

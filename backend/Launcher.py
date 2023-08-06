@@ -176,6 +176,37 @@ def removeAvailability():
           "message": "Availability has been booked already"}, 400
   return {"message": "Availability removed successfully", "success": True}
 
+@app.route("/addListingAmenity", methods=['POST'])
+@cross_origin(origin="*")
+def addListingAmenity():
+  listingId = request.json['listingId']
+  amenityName = request.json['amenityName']
+  amenityId = Host.get_amenity_id_by_name(amenityName)
+  if(amenityId is None):
+    Host.insert_one_amenity(amenityName)
+    amenityId = Host.get_amenity_id_by_name(amenityName)
+  success = Host.insert_one_listing_amenity(listingId, amenityId)
+  if(not success):
+    return {"success": False, 
+          "message": "Amenity already exists for this listing"}, 400
+  return {"message": "Amenity added successfully", "success": True}
+
+@app.route("/removeListingAmenity", methods=['POST'])
+@cross_origin(origin="*")
+def removeListingAmenity():
+  listingId = request.json['listingId']
+  amenityName = request.json['amenityName']
+  amenityId = Host.get_amenity_id_by_name(amenityName)
+  if(amenityId is None):
+    return {"success": False, 
+          "message": "Amenity does not exist"}, 400
+  success = Host.remove_one_listing_amenity(listingId, amenityId)
+  if(not success):
+    return {"success": False, 
+          "message": "Amenity does not exist for this listing"}, 400
+  return {"message": "Amenity removed successfully", "success": True}
+
+
 def setup_database():
   cusor = mysql.cursor()
   for query in setup_queries:
