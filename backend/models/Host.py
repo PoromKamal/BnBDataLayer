@@ -123,6 +123,22 @@ class Host:
     return result
   
   @staticmethod
+  def get_reviews_by_listing_id(listing_id):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT R.username, LR.rating, LR.comment, LR.date
+      FROM ListingRatings LR
+      INNER JOIN Renters R ON LR.renter_id = R.id AND LR.listing_id = %s
+    '''
+    values = (listing_id,)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+  
+  @staticmethod
   def get_listing_by_id (listing_id):
     mysqlConn = Host.get_mysql_connection()
     cursor = mysqlConn.cursor(dictionary=True)

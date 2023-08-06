@@ -4,8 +4,8 @@ import Select, { ActionMeta, MultiValue } from 'react-select'
 import { ValueType } from "tailwindcss/types/config"
 
 export default function Listing() {
-  const [listing, setListing] = React.useState({address: '', city: '', 
-  country: '', postalCode: '', longitude: '', latitude: '', price: ''})
+  const [listing, setListing] = React.useState({address: '', city: '',
+  country: '', postalCode: '', longitude: '', latitude: '', price: '', averageRating: ''})
   const [amenities, setAmenities] = React.useState([] as { value: any; label: any }[])
   const [allAmenities, setAllAmenities] = React.useState([] as { value: any; label: any }[])
   const [amenitiesLoaded, setAmenitiesLoaded] = React.useState(false)
@@ -111,6 +111,25 @@ export default function Listing() {
     </div>
   )
 
+  const ReviewCard = (comment: string, date: string, 
+      rating: string, renterUsername: string) => 
+      (<div className="flex flex-col border-solid p-2
+       border-black border-2 rounded-md">
+        <div>
+          Renter: {renterUsername}
+        </div>
+        <div>
+          Rating: {rating}
+        </div>
+        <div>
+          Comment: {comment}
+        </div>
+        <div>
+          Date: {date}
+        </div>
+      </div>
+      )
+
   useEffect(() => {
     const fetchData = async () => {
       // Fetch listing data
@@ -161,7 +180,13 @@ export default function Listing() {
         booking.start_date = booking.start_date.replace('00:00:00 GMT', '')
         booking.end_date = booking.end_date.replace('00:00:00 GMT', '')
       })
-      
+
+      // Get all the reviews
+      const reviewData = await fetch('http://localhost:5000/getReviewsByListingId?id='
+                                + listingId)
+      const reviewJson = await reviewData.json()
+      console.log(reviewJson)
+      setReviews(reviewJson.reviews)
       setBookings(bookingJson.bookings)
       setAvailabilities(availabilityJson.availabilities)
       setAllAmenities(newAllAmens)
@@ -243,7 +268,7 @@ export default function Listing() {
   }
 
   return(
-    <div className="flex flex-col justify-center items-center gap-1">
+    <div className="flex flex-col justify-center items-center">
       Listing details:
       <div className="flex flex-col border-solid 
                       rounded-md border-black border-2 items-center
@@ -273,32 +298,41 @@ export default function Listing() {
               Price: {listing.price}
             </div>
         </div>
+        <div>
+          Rating: {listing.averageRating}
+        </div>
       </div>
 
       <div>
         {amenitiesLoaded ? renderAmenityDropDown() : <div>Loading...</div>}
       </div>
 
-      <div>
+      <div className="flex flex-col gap-2">
         Reviews:
+        {reviews.map((review: any) => ReviewCard(review.comment, review.date,
+          review.rating, review.username))}
       </div>
 
-      <div className="flex flex-col items-center gap-5">
-        <div className="flex flex-col border-solid border-black 
-                        border-2 rounded-md p-2">
-          Start Date:
-          <input value={newAvailability.startDate}
-            onChange={(e) => {setNewAvailability({...newAvailability, startDate: e.target.value})}}
-            type="date"/>
-          End Date:
-          <input value={newAvailability.endDate}
-            onChange={(e) => {setNewAvailability({...newAvailability, endDate: e.target.value})}}
-            type="date"/>
-          <button onClick={handleAddAvailability}
-            className="border-solid border-black border-2 rounded-md">
-            Add Availability
-          </button>
+      <div className="flex items-center gap-5 m-5">
+        <div className="flex flex-col items-center">
+          Add Availability:
+          <div className="flex flex-col border-solid border-black 
+                          border-2 rounded-md p-2">
+            Start Date:
+            <input value={newAvailability.startDate}
+              onChange={(e) => {setNewAvailability({...newAvailability, startDate: e.target.value})}}
+              type="date"/>
+            End Date:
+            <input value={newAvailability.endDate}
+              onChange={(e) => {setNewAvailability({...newAvailability, endDate: e.target.value})}}
+              type="date"/>
+            <button onClick={handleAddAvailability}
+              className="border-solid border-black border-2 rounded-md">
+              Add Availability
+            </button>
+          </div>
         </div>
+        
         <div className="flex flex-col gap-1 items-center max-h-56 overflow-scroll">
           All Availabilities:
           {availabilities.map((avail: any) => AvailabilityCard(avail.listing_id, avail.date))}
@@ -313,7 +347,7 @@ export default function Listing() {
         }
       </div>
 
-      <div>
+      <div className="m-5">
         <button onClick={()=>{window.location.href = '/hostListings'}}
           className="border-solid border-black border-2 rounded-md p-1">
           Back

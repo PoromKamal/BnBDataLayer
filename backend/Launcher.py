@@ -63,13 +63,15 @@ def register():
                             "Canada", "M1C3T2", "33.06", "-71.06", "3434.00")
     
     renterId = Renter.insert_one_renter ("Ryan", "Ryan2", "password", "2000-01-01", "234567899", "1234 Trail St", "Student")
-
+    
+    Host.insert_one_availability (1, "2023-08-04")
     Host.insert_one_availability (1, "2023-08-05")
     Host.insert_one_availability (1, "2023-08-06")
     Host.insert_one_availability (1, "2023-08-07")
     Host.insert_one_availability (1, "2023-08-08")
     
-    Renter.insert_one_booking (1, renterId, "2023-08-05", "2023-08-09")
+    Renter.insert_one_booking (1, renterId, "2023-08-04", "2023-08-05")
+    Renter.insert_one_listing_rating (renterId, 1, 5, "Great place!")
     
     Host.insert_one_listing_amenity (1, 1)
     Host.insert_one_listing_amenity (1, 3)
@@ -224,6 +226,12 @@ def removeListingAmenity():
           "message": "Amenity does not exist for this listing"}, 400
   return {"message": "Amenity removed successfully", "success": True}
 
+@app.route("/getReviewsByListingId", methods=['GET'])
+@cross_origin(origin="*")
+def getReviewsByListingId():
+  listingId = request.args.get('id')
+  return {"success": True, 
+          "reviews": Host.get_reviews_by_listing_id(listingId)}
 
 def setup_database():
   cusor = mysql.cursor()

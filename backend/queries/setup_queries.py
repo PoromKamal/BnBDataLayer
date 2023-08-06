@@ -148,6 +148,7 @@ create_listing_rating_table = '''
     listing_id INT NOT NULL,
     rating INT NOT NULL,
     comment VARCHAR(100) NOT NULL,
+    date DATE NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (renter_id) REFERENCES Renters(id)
       ON DELETE CASCADE

@@ -124,8 +124,8 @@ class Renter:
     mysqlConn = Renter.get_mysql_connection()
     cursor = mysqlConn.cursor()
     query = '''
-      INSERT INTO ListingRatings (renter_id, listing_id, rating, comment)
-      VALUES (%s, %s, %s, %s)
+      INSERT INTO ListingRatings (renter_id, listing_id, rating, comment, date)
+      VALUES (%s, %s, %s, %s, CURDATE())
     '''
     values = (renter_id, listing_id, rating, comment)
     cursor.execute(query, values)
