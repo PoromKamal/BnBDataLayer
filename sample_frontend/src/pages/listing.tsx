@@ -20,8 +20,73 @@ export default function Listing() {
     // TODO: Update amenities for the listing
   }
 
-  useEffect(() => {
+  const handleRemoveAvail = async (listing_id: string, date: string) => {
+    const dateObj = new Date(date)
+    const processedDate = dateObj.toISOString().split('T')[0]
+    // TODO: Handle removal of availability
+    const removalResult =  await fetch('http://localhost:5000/removeAvailability', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({listingId: listing_id, date: processedDate})
+    })
 
+    if(!removalResult.ok) {
+      alert('Failed to remove availability')
+      return
+    }
+
+    // Update the availabilities state
+    const new_availabilities = availabilities.filter((avail: any) => avail.date !== date)
+    setAvailabilities(new_availabilities)
+  }
+
+  const AvailabilityCard = (listing_id: string, date: string) => {
+    return(
+      <div className="flex items-center 
+                      gap-1 border-solid border-black border-2 p-2 rounded-md">
+        <div>
+          {date}
+        </div>
+        <div>
+          <button onClick={()=>{handleRemoveAvail(listing_id, date)}}
+            className="border-solid border-black border-2 rounded-md p-1">
+            Delete
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const BookingCard = (bookingId: string, renterUsername: string, 
+                    startDate: string, endDate: string, pricePaid: string) => 
+  (
+    <div className="flex flex-col border-solid border-black 
+                    border-2 rounded-md p-2 items-center gap-1">
+      <div>
+        Renter: {renterUsername}
+      </div>
+      
+      <div className="flex gap-2 p-1 flex-col">
+        <div>
+          Start Date: {startDate}
+        </div>
+        <div>
+          End Date: {endDate}
+        </div>
+      </div>
+      <div>
+        Price Paid: {pricePaid}
+      </div>
+      <button className="border-solid border-black border-2 rounded-md p-1"
+        onClick={()=>{cancelBooking(bookingId)}} >
+        Cancel Booking
+      </button>
+    </div>
+  )
+
+  useEffect(() => {
     const fetchData = async () => {
       // Fetch listing data
       const listingId = localStorage.getItem('listingId')
@@ -52,6 +117,28 @@ export default function Listing() {
       allAmenityJson.amenities.forEach((amenity: any) => {
         newAllAmens.push({value: amenity.name, label: amenity.name}) 
       })
+
+      // Get all availabilities
+      const availabilityData = await fetch('http://localhost:5000/getAvailabilitiesByListingId?id='
+                                + listingId)
+      const availabilityJson = await availabilityData.json()
+
+      // Remove Time from date
+      availabilityJson.availabilities.forEach((avail: any) => {
+        avail.date = avail.date.replace('00:00:00 GMT', '')
+      })
+
+      const bookingData = await fetch('http://localhost:5000/getBookingsByListingId?id='
+                                + listingId)
+      const bookingJson = await bookingData.json()
+
+      bookingJson.bookings.forEach((booking: any) => {
+        booking.start_date = booking.start_date.replace('00:00:00 GMT', '')
+        booking.end_date = booking.end_date.replace('00:00:00 GMT', '')
+      })
+      
+      setBookings(bookingJson.bookings)
+      setAvailabilities(availabilityJson.availabilities)
       setAllAmenities(newAllAmens)
       setAmenities(currAmenities)
       setAmenitiesLoaded(true)
@@ -76,38 +163,26 @@ export default function Listing() {
     )
   }
 
-  function cancelBooking(bookingId: string) {
+  async function cancelBooking(bookingId: string) {
+    console.log(bookingId)
     // Process booking cancellation
-    
+    const cancellationResult = await fetch('http://localhost:5000/hostCancelBooking', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({bookingId: bookingId, hostId: localStorage.getItem('userId')})
+    })
+
+    if(!cancellationResult.ok) {
+      alert('Failed to cancel booking')
+      return
+    }
+
     // Update the bookings state
     const new_bookings = bookings.filter((booking: any) => booking.id !== bookingId)
     setBookings(new_bookings)
   }
-
-  const bookingCard = (bookingId: string, renterUsername: string, 
-                    startDate: string, endDate: string, pricePaid: string) => 
-  (
-    <div className="flex flex-col">
-      <div>
-        Renter: {renterUsername}
-      </div>
-
-      <div className="flex gap-2 p-1">
-        <div>
-          Start Date: {startDate}
-        </div>
-        <div>
-          End Date: {endDate}
-        </div>
-      </div>
-      <div>
-        Price Paid: {pricePaid}
-      </div>
-      <button onClick={()=>{cancelBooking(bookingId)}} >
-        Cancel Booking
-      </button>
-    </div>
-  )
 
   const handleAddAvailability = async () => {
     // Check start date is before end date
@@ -117,7 +192,7 @@ export default function Listing() {
       return
     }
 
-    const sendData = fetch('http://localhost:5000/insertAvailabilities', {
+    const sendData = await fetch('http://localhost:5000/insertAvailabilities', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -126,10 +201,24 @@ export default function Listing() {
         startDate: newAvailability.startDate, 
         endDate: newAvailability.endDate})
     })
+
+    const json = await sendData.json()
+    if(json.success) {
+      // Update availabilities state
+      // Refetch availabilities
+      const availabilityData = await fetch('http://localhost:5000/getAvailabilitiesByListingId?id='
+                                + listingId)
+      const availabilityJson = await availabilityData.json()
+      // Remove Time from date
+      availabilityJson.availabilities.forEach((avail: any) => {
+        avail.date = avail.date.replace('00:00:00 GMT', '')
+      })
+      setAvailabilities(availabilityJson.availabilities)
+    }
   }
 
   return(
-    <div className="flex flex-col justify-center items-center">
+    <div className="flex flex-col justify-center items-center gap-1">
       Listing details:
       <div className="flex flex-col border-solid 
                       rounded-md border-black border-2 items-center
@@ -169,7 +258,7 @@ export default function Listing() {
         Reviews:
       </div>
 
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-5">
         <div className="flex flex-col border-solid border-black 
                         border-2 rounded-md p-2">
           Start Date:
@@ -185,13 +274,18 @@ export default function Listing() {
             Add Availability
           </button>
         </div>
-        <div>
-          All Availabilities
+        <div className="flex flex-col gap-1 items-center max-h-56 overflow-scroll">
+          All Availabilities:
+          {availabilities.map((avail: any) => AvailabilityCard(avail.listing_id, avail.date))}
         </div>
       </div>
 
-      <div>
+      <div className="flex flex-col gap-1 items-center max-h-56 overflow-scroll">
         Bookings:
+        {
+          bookings.map((booking: any) => BookingCard(booking.id, booking.username,
+            booking.start_date, booking.end_date, booking.price_paid))
+        }
       </div>
 
     </div>)

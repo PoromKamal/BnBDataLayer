@@ -61,7 +61,16 @@ def register():
                             "Canada", "M1C2T2", "33", "-71", "354.00")
     Host.insert_one_listing(newId, "1234 Secondary St", "Brampton",
                             "Canada", "M1C3T2", "33.06", "-71.06", "3434.00")
+    
+    renterId = Renter.insert_one_renter ("Ryan", "Ryan2", "password", "2000-01-01", "234567899", "1234 Trail St", "Student")
 
+    Host.insert_one_availability (1, "2023-08-05")
+    Host.insert_one_availability (1, "2023-08-06")
+    Host.insert_one_availability (1, "2023-08-07")
+    Host.insert_one_availability (1, "2023-08-08")
+    
+    Renter.insert_one_booking (1, renterId, "2023-08-05", "2023-08-09")
+    
     Host.insert_one_listing_amenity (1, 1)
     Host.insert_one_listing_amenity (1, 3)
     Host.insert_one_listing_amenity (1, 2)
@@ -119,7 +128,53 @@ def insertAvailabilities():
   
   return {"success": True, "message": "Temp"}
 
+@app.route("/getAvailabilitiesByListingId", methods=['GET'])
+@cross_origin(origin="*")
+def getAvailabilitiesByListingId():
+  listingId = request.args.get('id')
+  return {"success": True, 
+          "availabilities": Host.get_all_availabilities(listingId)}
 
+
+@app.route("/getBookingsByListingId", methods=['GET'])
+@cross_origin(origin="*")
+def getBookingsByListingId():
+  listingId = request.args.get('id')
+  return {"success": True, 
+          "bookings": Host.get_bookings_by_listing_id(listingId)}
+
+@app.route("/renterCancelBooking", methods=['POST'])
+@cross_origin(origin="*")
+def renterCancelBooking():
+  bookingId = request.json['bookingId']
+  renterId = request.json['renterId']
+  success = Renter.cancel_booking(bookingId, renterId)
+  if(not success):
+    return {"success": False, 
+          "message": "Booking does not exist or has already passed"}, 400
+  return {"message": "Booking cancelled successfully", "success": True}
+
+@app.route("/hostCancelBooking", methods=['POST'])
+@cross_origin(origin="*")
+def hostCancelBooking():
+  bookingId = request.json['bookingId']
+  renterId = request.json['hostId']
+  success = Host.cancel_booking(bookingId, renterId)
+  if(not success):
+    return {"success": False, 
+          "message": "Booking does not exist or has already passed"}, 400
+  return {"message": "Booking cancelled successfully", "success": True}
+
+@app.route("/removeAvailability", methods=['POST'])
+@cross_origin(origin="*")
+def removeAvailability():
+  listingId = request.json['listingId']
+  date = request.json['date']
+  success = Host.remove_one_availability(listingId, date)
+  if(not success):
+    return {"success": False, 
+          "message": "Availability has been booked already"}, 400
+  return {"message": "Availability removed successfully", "success": True}
 
 def setup_database():
   cusor = mysql.cursor()

@@ -356,7 +356,7 @@ class Renter:
     cursor.execute(query, values)
     result = cursor.fetchone()
     if result == None:
-      raise Exception("Booking does not exist or already passed")
+      return False
 
     # Add booking to cancellations table
     query = '''
@@ -368,3 +368,4 @@ class Renter:
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True

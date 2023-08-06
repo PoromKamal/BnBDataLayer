@@ -180,6 +180,20 @@ class Host:
   def remove_one_availability(listing_id, date):
     mysqlConn = Host.get_mysql_connection()
     cursor = mysqlConn.cursor()
+    # Check if the availability is already booked
+    query = '''
+      SELECT * FROM Bookings
+      WHERE listing_id = %s AND start_date <= %s AND end_date >= %s
+    '''
+    values = (listing_id, date, date)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    if result is not None:
+      cursor.close()
+      mysqlConn.close()
+      return False
+    
+    # Delete the availability
     query = '''
       DELETE FROM Availability
       WHERE listing_id = %s AND date = %s
@@ -189,6 +203,7 @@ class Host:
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True
   
   """
     Insert a renter rating made by a host 
@@ -258,6 +273,21 @@ class Host:
     return result[0]
   
   @staticmethod
+  def get_all_availabilities(listing_id):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT * FROM Availability
+      WHERE listing_id = %s
+    '''
+    values = (listing_id,)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+
+  @staticmethod
   def get_all_amenities ():
     mysqlConn = Host.get_mysql_connection()
     cursor = mysqlConn.cursor(dictionary=True)
@@ -265,6 +295,22 @@ class Host:
       SELECT * FROM Amenities
     '''
     cursor.execute(query)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+  
+  @staticmethod
+  def get_bookings_by_listing_id (listing_id):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT Renters.username, Bookings.* 
+      FROM Bookings
+      INNER JOIN Renters ON Bookings.renter_id = Renters.id AND Bookings.listing_id = %s
+    '''
+    values = (listing_id,)
+    cursor.execute(query, values)
     result = cursor.fetchall()
     cursor.close()
     mysqlConn.close()
@@ -285,7 +331,7 @@ class Host:
     if result is None:
       cursor.close()
       mysqlConn.close()
-      raise Exception("Booking does not exist or has already passed")
+      return False
     
     #Check if the host is the owner of the listing
     query = '''
@@ -298,15 +344,16 @@ class Host:
     if result is None:
       cursor.close()
       mysqlConn.close()
-      raise Exception("Host does not own this listing")
+      return False
     
     # insert into cancelled bookings
     query = '''
-      INSERT INTO Cancellations (booking_id, host_id)
-      VALUES (%s, %s)
+      INSERT INTO Cancellations (booking_id, host_id, cancellation_date)
+      VALUES (%s, %s, CURDATE())
     '''
     values = (booking_id, host_id)
     cursor.execute(query, values)
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True
