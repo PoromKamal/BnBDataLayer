@@ -14,7 +14,7 @@ class Reports:
   def get_total_bookings_by_city (dateRange:tuple):
     if(len(dateRange) != 2):
       raise Exception("Invalid date range")
-    cursor = Reports.mysql.cursor()
+    cursor = Reports.mysql.cursor(dictionary=True)
     query = '''
       SELECT city, COUNT(*) as bookingsCount
       FROM Bookings
@@ -31,15 +31,17 @@ class Reports:
     return result
   
   @staticmethod
-  def get_total_bookings_by_postal ():
-    cursor = Reports.mysql.cursor()
+  def get_total_bookings_by_postal (dateRange:tuple):
+    cursor = Reports.mysql.cursor(dictionary=True)
     query = '''
       SELECT postalCode, COUNT(*) as bookingsCount
       FROM Bookings
       INNER JOIN Listings ON Listings.id = Bookings.listing_id
+      WHERE start_date >= %s AND end_date <= %s
       GROUP BY postalCode
     '''
-    cursor.execute(query)
+    values = dateRange
+    cursor.execute(query, values)
     result = cursor.fetchall()
     for row in result:
       print(row)
@@ -48,7 +50,7 @@ class Reports:
 
   @staticmethod
   def get_total_listings_by_country ():
-    cursor = Reports.mysql.cursor()
+    cursor = Reports.mysql.cursor(dictionary=True)
     query = '''
       SELECT country, COUNT(*) as listingCount
       FROM Listings
@@ -63,7 +65,7 @@ class Reports:
 
   @staticmethod
   def get_total_listings_by_country_and_city ():
-    cursor = Reports.mysql.cursor()
+    cursor = Reports.mysql.cursor(dictionary=True)
     query = '''
       SELECT country, city, COUNT(*) as listingCount
       FROM Listings
@@ -78,7 +80,7 @@ class Reports:
   
   @staticmethod
   def get_total_listings_by_country_and_city_and_postal ():
-    cursor = Reports.mysql.cursor()
+    cursor = Reports.mysql.cursor(dictionary=True)
     query = '''
       SELECT country, city, postalCode, COUNT(*) as listingCount
       FROM Listings
@@ -115,8 +117,8 @@ class Reports:
 
   @staticmethod
   def get_hosts_ranking_by_listing_count_by_country (refineByCity=False):
-    cursor = Reports.mysql.cursor()
-    result = None
+    cursor = Reports.mysql.cursor(dictionary=True)
+    response = {}
     if(refineByCity):
       allCities = Reports.get_all_cities()
       for city in allCities:
@@ -131,9 +133,11 @@ class Reports:
         values = (city[0],)
         cursor.execute(query, values)
         result = cursor.fetchall()
-        print(f'City, Country: {city[0], city[1]}')
+        responseKey = f'{city[0]}, {city[1]}'
+        response[responseKey] = []
         for row in result:
-          print(row)
+          response[responseKey].append(row)
+        print(f'City, Country: {city[0], city[1]}')
         print('=============')
     else:
       allCountries = Reports.get_all_distinct_countries()
@@ -149,17 +153,20 @@ class Reports:
         values = (country[0],)
         cursor.execute(query, values)
         result = cursor.fetchall()
+        response[country[0]] = []
         print(f'Country: {country[0]}')
         for row in result:
+          response[country[0]].append(row)
           print(row)
         print('=============')
     cursor.close()
-    return result
+    return response
   
   @staticmethod
   def report_host_monopoly (refineByCity=False):
-    cursor = Reports.mysql.cursor()
+    cursor = Reports.mysql.cursor(dictionary=True)
     result = None
+    response = {}
     if (refineByCity):
       allCities = Reports.get_all_cities()
       for city in allCities:
@@ -177,8 +184,11 @@ class Reports:
         values = (city[0],city[0])
         cursor.execute(query, values)
         result = cursor.fetchall()
+        responseKey = f'{city[0]}, {city[1]}'
+        response[responseKey] = []
         print(f'City, Country: {city[0], city[1]}')
         for row in result:
+          response[responseKey].append(row)
           print(row)
         print('=============')
     else:
@@ -198,17 +208,20 @@ class Reports:
         values = (country[0], country[0])
         cursor.execute(query, values)
         result = cursor.fetchall()
+        response[country[0]] = []
         print(f'Country: {country[0]}')
         for row in result:
+          response[country[0]].append(row)
           print(row)
         print('=============')
     cursor.close()
-    return result
+    return response
   
   @staticmethod
   def get_rank_renter_by_bookings (timeRange: tuple, refineByCity=False):
-    cursor = Reports.mysql.cursor()
+    cursor = Reports.mysql.cursor(dictionary=True)
     result = None
+    response = {}
     if refineByCity:
       allCities = Reports.get_all_cities()
       for city in allCities:
@@ -226,6 +239,9 @@ class Reports:
         result = cursor.fetchall()
         print(f'City, Country: {city[0], city[1]}')
         for row in result:
+          responseKey = f'{city[0]}, {city[1]}'
+          response[responseKey] = []
+          response[responseKey].append(row)
           print(row)
         print('=============')
     else:
@@ -240,20 +256,39 @@ class Reports:
       values = timeRange
       cursor.execute(query, values)
       result = cursor.fetchall()
+      response = result
       for row in result:
         print(row)
     cursor.close()
-    return result
+    return response
 
   @staticmethod
   def get_renter_with_most_cancellations_ytd ():
-    cursor = Reports.mysql.cursor()
+    cursor = Reports.mysql.cursor(dictionary=True)
     query = '''
       SELECT R.*, COUNT(*) as cancellationCount
       FROM Cancellations C
       INNER JOIN Renters R ON R.id = C.renter_id
       WHERE C.cancellation_date >= (CURDATE() - INTERVAL 1 YEAR)
       GROUP BY R.id
+      ORDER BY cancellationCount DESC
+    '''
+    cursor.execute(query)
+    result = cursor.fetchall()
+    for row in result:
+      print(row)
+    cursor.close()
+    return result
+  
+  @staticmethod
+  def get_host_with_most_cancellations_ytd ():
+    cursor = Reports.mysql.cursor(dictionary=True)
+    query = '''
+      SELECT H.*, COUNT(*) as cancellationCount
+      FROM Cancellations C
+      INNER JOIN Hosts H ON H.id = C.host_id
+      WHERE C.cancellation_date >= (CURDATE() - INTERVAL 1 YEAR)
+      GROUP BY H.id
       ORDER BY cancellationCount DESC
     '''
     cursor.execute(query)

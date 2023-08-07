@@ -132,6 +132,13 @@ def getAmenitiesByListingId():
   listingId = request.args.get('id')
   return {"success": True, "amenities": Host.get_listing_amenities(listingId)}
 
+@app.route("/getHostsWith10PercentListings", methods=['GET'])
+@cross_origin(origin="*")
+def getHostsWith10PercentListings():
+  city = request.args.get('city') or False
+  return {"success": True, "hosts": Reports.report_host_monopoly(city)}
+
+
 @app.route("/getAllAmenities", methods=['GET'])
 @cross_origin(origin="*")
 def getAllAmenities():
@@ -162,6 +169,28 @@ def insertAvailabilities():
   
   return {"success": True, "message": "Temp"}
 
+@app.route("/rankRentersByBookings", methods=['GET'])
+@cross_origin(origin="*")
+def rankRentersByBookings():
+  startDate = request.args.get('startDate')
+  endDate = request.args.get('endDate')
+  dateRange = (startDate, endDate)
+  city = request.args.get('city') or False
+  return {"success": True, 
+          "renters": Reports.get_rank_renter_by_bookings(dateRange, city)}
+
+@app.route("/rankRentersByCancellations", methods=['GET'])
+@cross_origin(origin="*")
+def rankRentersByCancellations():
+  return {"success": True,
+          "renters": Reports.get_renter_with_most_cancellations_ytd()}
+
+@app.route("/rankHostsByCancellations", methods=['GET'])
+@cross_origin(origin="*")
+def rankHostsByCancellations():
+  return {"success": True,
+          "hosts": Reports.get_host_with_most_cancellations_ytd()}
+          
 
 @app.route("/insertListing", methods=['POST'])
 @cross_origin(origin="*")
@@ -365,6 +394,51 @@ def searchLongLat():
                                                  filterDict, orderBy)
   return {"success": True, "results": results}
 
+@app.route("/getTotalListingsByCountry", methods=['GET'])
+@cross_origin(origin="*")
+def getTotalListings():
+  city = request.args.get('city') or False
+  postalCode = request.args.get('postalCode') or False
+  
+  if city and postalCode:
+    return {"success": True, 
+            "listings": 
+            Reports.get_total_listings_by_country_and_city_and_postal ()}
+  
+  if city:
+    return {"success": True, 
+            "listings": Reports.get_total_listings_by_country_and_city()}
+
+  return {"success": True,
+          "listings": Reports.get_total_listings_by_country()}
+
+@app.route("/getHostRankPerCountry", methods=['GET'])
+@cross_origin(origin="*")
+def getHostRankPerCountry():
+  city = request.args.get('city') or False
+  return {"success": True, 
+          "hosts": Reports.get_hosts_ranking_by_listing_count_by_country(city)}
+
+
+@app.route("/getTotalBookingsBy", methods=['GET'])
+@cross_origin(origin="*")
+def getTotalBookings():
+  city = request.args.get('city') or False
+  startDate = request.args.get('startDate')
+  endDate = request.args.get('endDate')
+  dateRange = (startDate, endDate)
+  if city:
+    return {"success": True, 
+            "bookings": Reports.get_total_bookings_by_city(dateRange)}
+  
+  postal = request.args.get('postal') or False
+  if postal:
+    return {"success": True, 
+            "bookings": Reports.get_total_bookings_by_postal(dateRange)}
+
+  return {"success": True,
+          "bookings": Reports.get_total_bookings_by_city(dateRange)}
+
 @app.route("/searchByPostalCode", methods=['GET'])
 @cross_origin(origin="*")
 def searchByPostalCode():
@@ -460,6 +534,45 @@ def setup_amenities():
 if __name__ == '__main__':
   setup_database()
   setup_amenities()
+  hostId = Host.insert_one_host ("Porom", "asdf", "test", "2002-01-01", 
+                          "312411111", "1234 Main St",  "Student")
+                          
+  Host.insert_one_listing (hostId, "1234 Main St", "Toronto", "Canada", 
+                            "M1C2T2", "33", "-71", "354.00")
+  Host.insert_one_listing(hostId, "1234 Secondary St", "Brampton", "Canada", "M1C3T2",
+                          "33.06", "-71.06", "3434.00")
+  Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Bangladesh", "M3C2T2",
+                          "33.063", "-71.065", "23.00")
+  Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "China", "M3C2T2",
+                        "33.062", "-71.065", "23.00")
+  Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Japan", "M3C2T2",
+                        "33.061", "-71.065", "23.00")
+  renterId = Renter.insert_one_renter ("Ryan", "Ryan2", "password", "2000-01-01", "234567899", "1234 Trail St", "Student")
+  Host.insert_one_availability (1, "2023-08-04")
+  Host.insert_one_availability (1, "2023-08-05")
+  Host.insert_one_availability (1, "2023-08-06")
+  Host.insert_one_availability (1, "2023-08-07")
+  Host.insert_one_availability (1, "2023-08-08")
+
+  Host.insert_one_availability (2, "2023-08-04")
+  Host.insert_one_availability (2, "2023-08-05")
+  Host.insert_one_availability (2, "2023-08-06")
+  Host.insert_one_availability (2, "2023-08-07")
+  Host.insert_one_availability (2, "2023-08-08")
+
+  Host.insert_one_availability (3, "2023-08-04")
+  Host.insert_one_availability (3, "2023-08-05")
+  Host.insert_one_availability (3, "2023-08-06")
+  Host.insert_one_availability (3, "2023-08-07")
+  Host.insert_one_availability (3, "2023-08-08")
+
+  Renter.insert_one_booking (1, renterId, "2023-08-04", "2023-08-08")
+  Renter.insert_one_booking (2, renterId, "2023-08-05", "2023-08-08")
+  Renter.insert_one_booking (3, renterId, "2023-08-06", "2023-08-08")
+
+  Renter.cancel_booking (1, renterId)
+  Renter.cancel_booking (2, renterId)
+  Host.cancel_booking (3, hostId)
   """
   Host.insert_one_host ("Porom", "1999-01-01", "123456789", "1234 Main St",  "Student")
   Host.insert_one_host ("Sarraf", "1999-01-01", "345678912", "79 Main St",  "Student")

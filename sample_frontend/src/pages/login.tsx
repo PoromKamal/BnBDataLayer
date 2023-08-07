@@ -10,6 +10,7 @@ export default function Login() {
       <input className="border-solid border-2 rounded-md" placeholder='Password'/>
       <button className="border-solid border-2 rounded-md p-1">Login</button>
       <a href="/register">No account? Register!</a>
+      <a href="/reports">BnB Reports</a>
     </div>
   )
 }
