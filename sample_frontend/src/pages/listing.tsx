@@ -16,7 +16,7 @@ export default function Listing() {
   const [newAvailability, setNewAvailability] = React.useState({startDate: '', endDate: ''})
   const [role, setRole] = React.useState('' as string)
   const [recommendedAmenities, setRecommendedAmenities] = React.useState([] as { value: any; label: any }[])
-
+  const [recommendedPrice, setRecommendedPrice] = React.useState(0 as number)
   const handleChangeAmenities = async (newValue: MultiValue<{ value: any; label: any; }>, 
       actionMeta: ActionMeta<{ value: any; label: any; }>) => {
 
@@ -206,6 +206,7 @@ export default function Listing() {
         = await fetch('http://localhost:5000/getRecommendedAmenities?listingId=' + listingId)
       const recommendedAmenityJson = await recommendedAmenityData.json()
       setRecommendedAmenities(recommendedAmenityJson.amenities)
+      setRecommendedPrice(recommendedAmenityJson.recommendedPrice)
       setAllAmenities(newAllAmens)
     }
     fetchData()
@@ -479,7 +480,14 @@ export default function Listing() {
       {
         role === 'host' &&
         <div className="flex flex-col">
-          Host Toolkit (Recommended Amenities)
+          Host Toolkit 
+          <div>
+            Recommended Price: ${recommendedPrice}
+          </div>
+
+          <div>
+            Recommended Amenities
+          </div>
           <div className="flex flex-row justify-between">
             <div>
               Amenity

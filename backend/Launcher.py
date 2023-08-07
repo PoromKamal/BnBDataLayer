@@ -130,11 +130,11 @@ def insertAvailabilities():
   # Aggregate list of dates to insert starting
   # from start_date to end_date
   dates = []
-  cur_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-  end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+  cur_date = datetime.strptime(start_date, "%Y-%m-%d")
+  end_date = datetime.strptime(end_date, "%Y-%m-%d")
   while cur_date <= end_date:
     dates.append(cur_date.strftime("%Y-%m-%d"))
-    cur_date += datetime.timedelta(days=1)
+    cur_date += timedelta(days=1)
   
   # Insert dates
   for date in dates:
@@ -505,8 +505,11 @@ def bookListing():
 @cross_origin(origin="*")
 def getRecommendedAmenities():
   listingId = request.args.get('listingId')
+  result = Host.get_recommended_amenities(listingId)
+  print (result)
   return {"success": True, 
-          "amenities": Host.get_recommended_amenities(listingId)}
+          "amenities": result[0],
+          "recommendedPrice": result[1]}
 
 
 def setup_database():

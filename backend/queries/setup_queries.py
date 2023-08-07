@@ -54,7 +54,7 @@ create_authentication_table = '''
 create_renter_table = '''
   CREATE TABLE IF NOT EXISTS Renters (
     id INT AUTO_INCREMENT,
-    username VARCHAR(100) NOT NULL,
+    username VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,
     dateOfBirth DATE NOT NULL,
     SIN VARCHAR(9) UNIQUE NOT NULL,
@@ -85,7 +85,7 @@ create_renter_table = '''
 create_host_table = '''
   CREATE TABLE IF NOT EXISTS Hosts (
     id INT AUTO_INCREMENT,
-    username VARCHAR(100) NOT NULL,
+    username VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,
     dateOfBirth DATE NOT NULL,
     SIN VARCHAR(9) UNIQUE NOT NULL,

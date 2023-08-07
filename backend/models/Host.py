@@ -516,7 +516,7 @@ class Host:
 
   def get_recommended_amenities (listing_id):
     currAmenities = Host.get_listing_amenities(listing_id)
-    currAmenities = [amenity['id'] for amenity in currAmenities]
+    currAmenities = set([amenity['id'] for amenity in currAmenities])
     mysqlConn = Host.get_mysql_connection()
     cursor = mysqlConn.cursor(dictionary=True)
     allListingsWithRevenue = Host.get_listings_with_revenue_generated()
@@ -533,6 +533,7 @@ class Host:
       
     # Check the amenities of the better performing listings, which are not in the current listing
     recommendedAmenities = []
+    uniqueAmenities = set()
     for listing in betterPerformingListings:
       amenities = Host.get_listing_amenities(listing['id'])
       diffAmenities = set()
@@ -545,14 +546,23 @@ class Host:
           continue
         projectedIncrease = (listing['revenue'] - currListingRevenue) / len(diffAmenities)
         for amenity in diffAmenities:
-          if amenity not in recommendedAmenities:
+          if amenity not in uniqueAmenities:
             recommendedAmenities.append({
               'id': amenity,
               "name": Host.get_amenity_name_by_id(amenity),
               'projectedIncrease': projectedIncrease
             })
+            uniqueAmenities.add(amenity)
     recommendedAmenities.sort(key=lambda x: x['projectedIncrease'], reverse=True)
     cursor.close()
     mysqlConn.close()
-    return recommendedAmenities
+    recommendedPrice = 0
+    if(len(betterPerformingListings) > 0):
+      averagePrice = 0
+      for listing in betterPerformingListings:
+        averagePrice += listing['revenue']
+      averagePrice /= len(betterPerformingListings)
+      recommendedPrice = averagePrice
+
+    return [recommendedAmenities, recommendedPrice]
     
