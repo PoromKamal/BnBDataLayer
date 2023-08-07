@@ -515,5 +515,5 @@ renterRatingData = [
   {"rating": 2, "comment": "Unpleasant renter, wouldn't recommend."},
   {"rating": 5, "comment": "Absolutely loved it, will definitely rent again."},
   {"rating": 3, "comment": "Adequate renter, met basic requirements."},
-  {"rating": 1, "comment": "Horrible service and conditions."},
+  {"rating": 1, "comment": "Horrible service and conditions."}
 ]

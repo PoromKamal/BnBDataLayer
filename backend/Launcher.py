@@ -444,8 +444,10 @@ def searchByPostalCode():
   startDate = request.args.get('startDate') or None
   endDate = request.args.get('endDate') or None
   minRating = request.args.get('minRating') or 1
-  amenities = amenities.split(",")
-  print(amenities)
+  if amenities:
+    amenities = amenities.split(",")
+  else:
+    amenities = []
   filterDict = {
     'price_range': (minPrice, maxPrice),
     'amenities' : amenities,
@@ -605,6 +607,38 @@ def load_in_demo_data():
       Host.insert_one_renter_rating (booking['renter_id'], i, 
                                      DemoData.renterRatingData[random_index2]['rating'], 
                                     DemoData.renterRatingData[random_index2]['comment'])
+      
+  # Insert amenities for listings for all except first
+  amenityId1 = random.randint(1, 5)
+  amenityId2 = random.randint(6, 10)
+  amenityId3 = random.randint(11, 15)
+  amenityId4 = random.randint(16, 20)
+  amenityId5 = random.randint(21, 25)
+  amenityId6 = random.randint(26, 30)
+  amenityId7 = random.randint(31, 35)
+  for i in range(2, 31):
+    if i % 2 == 0:
+      Host.insert_one_listing_amenity(i, amenityId1)
+    
+    if i % 3 == 0:
+      Host.insert_one_listing_amenity(i, amenityId2)
+    
+    if i % 5 == 0:
+      Host.insert_one_listing_amenity(i, amenityId3)
+
+    Host.insert_one_listing_amenity(i, amenityId4)
+    Host.insert_one_listing_amenity(i, amenityId5)
+    Host.insert_one_listing_amenity(i, amenityId6)
+    Host.insert_one_listing_amenity(i, amenityId7)
+
+    amenityId1 = random.randint(1, 5)
+    amenityId2 = random.randint(6, 10)
+    amenityId3 = random.randint(11, 15)
+    amenityId4 = random.randint(16, 20)
+    amenityId5 = random.randint(21, 25)
+    amenityId6 = random.randint(26, 30)
+    amenityId7 = random.randint(31, 35)
+
 
 if __name__ == '__main__':
   setup_database()

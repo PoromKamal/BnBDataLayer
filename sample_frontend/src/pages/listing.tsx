@@ -152,6 +152,12 @@ export default function Listing() {
       const listingJson = await listingData.json()
       setListing(listingJson.listing)
 
+      // Get all the reviews
+      const reviewData = await fetch('http://localhost:5000/getReviewsByListingId?id='
+                                + listingId)
+      const reviewJson = await reviewData.json()
+      setReviews(reviewJson.reviews)
+
       //Fetch amenities
       const amenityData = await fetch('http://localhost:5000/getAmenitiesByListingId?id='
                                 + listingId)
@@ -163,6 +169,8 @@ export default function Listing() {
       amenityJson.amenities.forEach((amenity: any) => {
         currAmenities.push({value: amenity.name, label: amenity.name})
       })
+      setAmenities(currAmenities)
+      setAmenitiesLoaded(true)
 
       // Get all amenities
       const allAmenityData = await fetch('http://localhost:5000/getAllAmenities')
@@ -182,7 +190,7 @@ export default function Listing() {
       availabilityJson.availabilities.forEach((avail: any) => {
         avail.date = avail.date.replace('00:00:00 GMT', '')
       })
-
+      setAvailabilities(availabilityJson.availabilities)
       const bookingData = await fetch('http://localhost:5000/getBookingsByListingId?id='
                                 + listingId)
       const bookingJson = await bookingData.json()
@@ -191,26 +199,14 @@ export default function Listing() {
         booking.start_date = booking.start_date.replace('00:00:00 GMT', '')
         booking.end_date = booking.end_date.replace('00:00:00 GMT', '')
       })
-
-      // Get all the reviews
-      const reviewData = await fetch('http://localhost:5000/getReviewsByListingId?id='
-                                + listingId)
-      const reviewJson = await reviewData.json()
+      setBookings(bookingJson.bookings)
 
       // Fetch recommended amenities
       const recommendedAmenityData 
         = await fetch('http://localhost:5000/getRecommendedAmenities?listingId=' + listingId)
-      
       const recommendedAmenityJson = await recommendedAmenityData.json()
-
-      console.log(reviewJson)
-      setReviews(reviewJson.reviews)
       setRecommendedAmenities(recommendedAmenityJson.amenities)
-      setBookings(bookingJson.bookings)
-      setAvailabilities(availabilityJson.availabilities)
       setAllAmenities(newAllAmens)
-      setAmenities(currAmenities)
-      setAmenitiesLoaded(true)
     }
     fetchData()
   }, [])

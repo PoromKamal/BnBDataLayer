@@ -406,7 +406,6 @@ class Renter:
     return result
 
   def build_search_query(base_query, baseValues, filters):
-
     if len(filters['price_range']) == 2 \
       and filters['price_range'][0] != None \
       and filters['price_range'][1] != None \
@@ -447,9 +446,9 @@ class Renter:
       baseValues += tuple(filters['amenities'])
     
     if filters['ascending']:
-      base_query += f'ORDER BY price ASC'
+      base_query += f'\nORDER BY price ASC'
     else:
-      base_query += f'ORDER BY price DESC'
+      base_query += f'\nORDER BY price DESC'
     return (base_query, baseValues)
 
   @staticmethod
@@ -466,6 +465,8 @@ class Renter:
     
     [query, values] = \
       Renter.build_search_query(base_query, baseValues, filters)
+    
+    print(query, values)
     mysqlConn = Renter.get_mysql_connection()
     cursor = mysqlConn.cursor(dictionary=True)
     cursor.execute(query, values)
