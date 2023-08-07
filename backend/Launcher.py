@@ -46,6 +46,16 @@ def register():
   if(role == "renter"):
     newId = Renter.insert_one_renter(name, username, password, 
                              dateOfBirth, SIN, address, occupation)
+    
+    hostId = Host.insert_one_host ("Porom", "asdf", "test", "2002-01-01", 
+                          "312411111", "1234 Main St",  "Student")
+                          
+    Host.insert_one_listing (hostId, "1234 Main St", "Toronto", "Canada", 
+                             "M1C2T2", "33", "-71", "354.00")
+    Host.insert_one_listing(hostId, "1234 Secondary St", "Brampton", "Canada", "M1C3T2",
+                            "33.06", "-71.06", "3434.00")
+    Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Canada", "M3C2T2",
+                            "33.065", "-71.065", "23.00")
     if(newId is None):
       return {"success": False, "message": "Username already exists"}, 400
     return {"success": True, "message": "Successfully registered", "id": newId}
@@ -262,6 +272,95 @@ def deleteHost():
     return {"success": False, 
           "message": "Host does not exist"}, 400
   return {"message": "Host deleted successfully", "success": True}
+
+@app.route("/searchByLongLat", methods=['GET'])
+@cross_origin(origin="*")
+def searchLongLat():
+  longitude = request.args.get('longitude')
+  latitude = request.args.get('latitude')
+  radius = request.args.get('radius')
+  searchBy = request.args.get('searchBy')
+  order = request.args.get('order') or "ascending"
+
+  minPrice = request.args.get('minPrice') or None
+  maxPrice = request.args.get('maxPrice') or None
+  amenities = request.args.get('amenities') or []
+  startDate = request.args.get('startDate') or None
+  endDate = request.args.get('endDate') or None
+  minRating = request.args.get('minRating') or 1
+  postalCode = request.args.get('postalCode') or None
+
+  filterDict = {
+    'price_range': (minPrice, maxPrice),
+    'amenities' : amenities,
+    'availabilityWindow' :  (startDate, endDate),
+    'minRating' :  minRating,
+    'ascending' : order == "ascending",
+    'postalCode' : postalCode
+  }
+
+  if(not searchBy):
+    searchBy = "distance"
+  
+  if(not order):
+    order = "ascending" # Default to ascending
+
+  results = Renter.search_listings_by_proximity (longitude, latitude, radius, 
+                                                 filterDict, searchBy)
+  return {"success": True, "results": results}
+
+@app.route("/searchByPostalCode", methods=['GET'])
+@cross_origin(origin="*")
+def searchByPostalCode():
+  postalCode = request.args.get('postalCode')
+  order = request.args.get('order') or "ascending"
+
+  minPrice = request.args.get('minPrice') or None
+  maxPrice = request.args.get('maxPrice') or None
+  amenities = request.args.get('amenities') or []
+  startDate = request.args.get('startDate') or None
+  endDate = request.args.get('endDate') or None
+  minRating = request.args.get('minRating') or 1
+
+  filterDict = {
+    'price_range': (minPrice, maxPrice),
+    'amenities' : amenities,
+    'availabilityWindow' :  (startDate, endDate),
+    'minRating' :  minRating,
+    'ascending' : order == "ascending",
+    'postalCode' : ""
+  }
+
+  results = Renter.search_listings_by_postal_code(postalCode, filterDict)
+  return {"success": True, "results": results}
+  
+@app.route("/searchByAddress", methods=['GET'])
+@cross_origin(origin="*")
+def searchByAddress():
+  streetAddress = request.args.get('streetAddress')
+  order = request.args.get('order') or "ascending"
+  city = request.args.get('city') or None
+  country = request.args.get('country') or None
+
+  minPrice = request.args.get('minPrice') or None
+  maxPrice = request.args.get('maxPrice') or None
+  amenities = request.args.get('amenities') or []
+  startDate = request.args.get('startDate') or None
+  endDate = request.args.get('endDate') or None
+  minRating = request.args.get('minRating') or 1
+  postalCode = request.args.get('postalCode') or None
+
+  filterDict = {
+    'price_range': (minPrice, maxPrice),
+    'amenities' : amenities,
+    'availabilityWindow' :  (startDate, endDate),
+    'minRating' :  minRating,
+    'ascending' : order == "ascending",
+    'postalCode' : postalCode
+  }
+
+  results = Renter.search_listings_by_address(streetAddress, city, country, filterDict)
+  return {"success": True, "results": results}
 
 def setup_database():
   cusor = mysql.cursor()

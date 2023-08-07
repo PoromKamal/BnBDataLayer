@@ -219,6 +219,14 @@ class Renter:
       base_query += " AND price >= %s AND price <= %s"
       values += (filters['price_range'][0], filters['price_range'][1])
 
+    if(filters['price_range'][0] != None and filters['price_range'][1] == None):
+      base_query += " AND price >= %s"
+      baseValues += (filters['price_range'][0],)
+    
+    if(filters['price_range'][0] == None and filters['price_range'][1] != None):
+      base_query += " AND price <= %s"
+      baseValues += (filters['price_range'][1],)
+
     if filters['minRating'] != 1:
       base_query += " AND averageRating >= %s"
       values += (filters['minRating'],)
@@ -240,7 +248,7 @@ class Renter:
     if filters['ascending']:
       base_query += f'\n ORDER BY {order_by} ASC '
     else:
-      base_query += f'ORDER BY {order_by} DESC'
+      base_query += f'\nORDER BY {order_by} DESC'
     return (base_query, values)
 
   @staticmethod
@@ -248,11 +256,11 @@ class Renter:
                                     km_radius, filters, order_by = "distance"):
     [query, values] = \
     Renter.build_proximity_search_query(longitude, latitude, km_radius, 
-                                        filters, order_by)
-    #print(query)
-    #print(values)
+                                        filters, order_by)                
+    print(query)
+    print(values)
     mysqlConn = Renter.get_mysql_connection()
-    cursor = mysqlConn.cursor()
+    cursor = mysqlConn.cursor(dictionary=True)
     cursor.execute(query, values)
     result = cursor.fetchall()
     # print out the results
@@ -270,6 +278,14 @@ class Renter:
       and filters['price_range'][0] <= filters['price_range'][1]:
       base_query += " AND price >= %s AND price <= %s"
       baseValues += (filters['price_range'][0], filters['price_range'][1])
+
+    if(filters['price_range'][0] != None and filters['price_range'][1] == None):
+      base_query += " AND price >= %s"
+      baseValues += (filters['price_range'][0],)
+    
+    if(filters['price_range'][0] == None and filters['price_range'][1] != None):
+      base_query += " AND price <= %s"
+      baseValues += (filters['price_range'][1],)
 
     if filters['minRating'] != 1:
       base_query += " AND averageRating >= %s"
@@ -315,32 +331,35 @@ class Renter:
     
     [query, values] = \
       Renter.build_search_query(base_query, baseValues, filters)
+    print(query)
     mysqlConn = Renter.get_mysql_connection()
-    cursor = mysqlConn.cursor()
+    cursor = mysqlConn.cursor(dictionary=True)
     cursor.execute(query, values)
     result = cursor.fetchall()
-    for row in result:
-      print(row)
     cursor.close()
     mysqlConn.close()
+    return result
 
   @staticmethod
-  def search_listings_by_address (address, filters):
+  def search_listings_by_address (address, city, country, filters):
     base_query = '''
       SELECT * FROM Listings
       WHERE address = %s
+      AND city = %s
+      AND country = %s
     '''
-    base_values = (address,)
+    base_values = (address, city, country)
     [query, values] = \
       Renter.build_search_query(base_query, base_values, filters)
     mysqlConn = Renter.get_mysql_connection()
-    cursor = mysqlConn.cursor()
+    cursor = mysqlConn.cursor(dictionary=True)
     cursor.execute(query, values)
     result = cursor.fetchall()
     for row in result:
       print(row)
     cursor.close()
     mysqlConn.close()
+    return result
 
 
   @staticmethod
