@@ -12,6 +12,8 @@ export default function Home() {
       window.location.href = '/login'
     else if (role === 'host')
       window.location.href = '/hostDashboard'
+    else if (role === 'renter')
+      window.location.href = '/renterDashboard'
   }, [])
 
   return (
