@@ -233,6 +233,36 @@ def getReviewsByListingId():
   return {"success": True, 
           "reviews": Host.get_reviews_by_listing_id(listingId)}
 
+@app.route("/getRecentRenters", methods=['GET'])
+@cross_origin(origin="*")
+def getRecentRenters():
+  hostId = request.args.get('id')
+  days = 180
+  return {"success": True, 
+          "renters": Host.get_recent_renters(hostId, days)}
+
+@app.route("/insertRenterRating", methods=['POST'])
+@cross_origin(origin="*")
+def insertRenterRating():
+  renterId = request.json['renterId']
+  hostId = request.json['hostId']
+  rating = request.json['rating']
+  comment = request.json['comment']
+  print(renterId, hostId, rating, comment)
+  if(not(renterId and hostId and rating and comment)):
+    return {"success": False, 
+          "message": "Missing required fields"}, 400
+
+@app.route("/deleteHost", methods=['DELETE'])
+@cross_origin(origin="*")
+def deleteHost():
+  hostId = request.json['hostId']
+  success = Host.remove_one_host(hostId)
+  if(not success):
+    return {"success": False, 
+          "message": "Host does not exist"}, 400
+  return {"message": "Host deleted successfully", "success": True}
+
 def setup_database():
   cusor = mysql.cursor()
   for query in setup_queries:

@@ -75,6 +75,7 @@ class Host:
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True
 
   """
   Insert a new listing into the listing table
@@ -132,6 +133,25 @@ class Host:
       INNER JOIN Renters R ON LR.renter_id = R.id AND LR.listing_id = %s
     '''
     values = (listing_id,)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+  
+  @staticmethod
+  def get_recent_renters(hostId, days):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT R.username, L.*, B.*
+      FROM Listings L
+      INNER JOIN Bookings B ON L.id = B.listing_id AND L.hostId = %s
+      INNER JOIN Renters R ON B.renter_id = R.id 
+      AND B.end_date >= CURDATE() - INTERVAL %s DAY
+      AND B.end_date < CURDATE()
+    '''
+    values = (hostId, days)
     cursor.execute(query, values)
     result = cursor.fetchall()
     cursor.close()
@@ -252,6 +272,7 @@ class Host:
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True
 
   """
     Insert an amenity into the amenities table
@@ -270,6 +291,21 @@ class Host:
     mysqlConn.commit()
     mysqlConn.close()
 
+  @staticmethod
+  def get_reviews_made_by_host (hostId):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT R.username, LR.rating, LR.comment, LR.date
+      FROM ListingRatings LR
+      INNER JOIN Renters R ON LR.renter_id = R.id AND LR.host_id = %s
+    '''
+    values = (hostId,)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
   """
     Insert a listing amenity into the listing amenities table
   """
