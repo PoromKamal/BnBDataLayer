@@ -76,6 +76,7 @@ class Renter:
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True
 
   """
   Returns a renter from the renter table
@@ -141,6 +142,52 @@ class Renter:
     mysqlConn.close()
     return result
 
+  @staticmethod
+  def get_all_bookings_by_id (renterId):
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT * FROM Bookings
+      WHERE renter_id = %s
+    '''
+    values = (renterId,)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+
+  @staticmethod
+  def find_renter_by_auth(username, password):
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT Renters.id
+      FROM Renters
+      INNER JOIN Authentication ON Renters.username = Authentication.username
+      WHERE Renters.username = %s AND Authentication.password = %s
+    '''
+    values = (username, password)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    cursor.close()
+    mysqlConn.close()
+    return result
+
+  @staticmethod
+  def get_past_bookings_by_id(renterId):
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT * FROM Bookings
+      WHERE renter_id = %s AND end_date < CURDATE()
+    '''
+    values = (renterId,)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
 
   """
     Inserts a booking into the booking table
@@ -162,10 +209,8 @@ class Renter:
       cursor.close()
       return False
     
-    print(start_date, end_date)
     startDate = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     endDate = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-    print(abs((endDate - startDate).days) + 1)
     
     # TODO: Check if conflicts with other bookings
     query = '''
@@ -179,7 +224,6 @@ class Renter:
     cursor.execute(query, values)
     result = cursor.fetchall()
     if len(result) > 0:
-      print(result, start_date, end_date, listing_id)
       cursor.close()
       return False
     # TODO: Check if dates in {start_date, end_date} is available
@@ -353,15 +397,10 @@ class Renter:
     [query, values] = \
     Renter.build_proximity_search_query(longitude, latitude, km_radius, 
                                         filters, order_by)                
-    print(query)
-    print(values)
     mysqlConn = Renter.get_mysql_connection()
     cursor = mysqlConn.cursor(dictionary=True)
     cursor.execute(query, values)
     result = cursor.fetchall()
-    # print out the results
-    for row in result:
-      print(row)
     cursor.close()
     mysqlConn.close()
     return result
@@ -427,7 +466,6 @@ class Renter:
     
     [query, values] = \
       Renter.build_search_query(base_query, baseValues, filters)
-    print(query)
     mysqlConn = Renter.get_mysql_connection()
     cursor = mysqlConn.cursor(dictionary=True)
     cursor.execute(query, values)
@@ -451,8 +489,6 @@ class Renter:
     cursor = mysqlConn.cursor(dictionary=True)
     cursor.execute(query, values)
     result = cursor.fetchall()
-    for row in result:
-      print(row)
     cursor.close()
     mysqlConn.close()
     return result

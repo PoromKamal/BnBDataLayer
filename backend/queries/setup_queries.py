@@ -66,6 +66,20 @@ create_renter_table = '''
     UNIQUE (SIN),
     PRIMARY KEY (id)
   );
+  CREATE TRIGGER before_delete_renter
+    BEFORE DELETE ON Renters
+    FOR EACH ROW
+    BEGIN
+      DELETE FROM PaymentInformation
+      WHERE renter_id = OLD.id;
+      DELETE FROM RenterRatings
+      WHERE renter_id = OLD.id;
+      DELETE FROM Bookings
+      WHERE renter_id = OLD.id;
+      DELETE FROM Cancellations
+      WHERE renter_id = OLD.id;
+    END;
+  
 '''
 
 create_host_table = '''
@@ -120,7 +134,7 @@ create_booking_table = '''
   CREATE TABLE IF NOT EXISTS Bookings (
     id INT AUTO_INCREMENT,
     listing_id INT NOT NULL,
-    renter_id INT NOT NULL,
+    renter_id INT,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     price_paid DECIMAL(10, 2) NOT NULL,
@@ -129,8 +143,8 @@ create_booking_table = '''
       ON DELETE CASCADE
       ON UPDATE CASCADE,
     FOREIGN KEY (renter_id) REFERENCES Renters(id)
-      ON DELETE CASCADE
-      ON UPDATE CASCADE,
+      ON DELETE NO ACTION
+      ON UPDATE NO ACTION,
     CHECK (start_date <= end_date)
   );
   CREATE TRIGGER calculate_price_paid
@@ -138,6 +152,13 @@ create_booking_table = '''
     FOR EACH ROW
     BEGIN
       SET NEW.price_paid = (SELECT price FROM Listings WHERE id = NEW.listing_id) * (DATEDIFF(NEW.end_date, NEW.start_date) + 1);
+    END;
+  CREATE TRIGGER before_delete_booking
+    BEFORE DELETE ON Bookings
+    FOR EACH ROW
+    BEGIN
+      DELETE FROM Cancellations
+      WHERE booking_id = OLD.id;
     END;
 '''
 
@@ -267,11 +288,11 @@ create_cancellation_table = '''
       ON DELETE NO ACTION
       ON UPDATE CASCADE,
     FOREIGN KEY (host_id) REFERENCES Hosts(id)
-      ON DELETE NO ACTION
+      ON DELETE SET NULL
       ON UPDATE CASCADE,
     FOREIGN KEY (renter_id) REFERENCES Renters(id)
+      ON UPDATE NO ACTION
       ON DELETE NO ACTION
-      ON UPDATE CASCADE
   );
 '''
 

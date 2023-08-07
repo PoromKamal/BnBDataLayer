@@ -40,6 +40,39 @@ class Host:
     mysqlConn.close()
     return resultId
 
+  @staticmethod
+  def find_host_by_auth(username, password):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT Hosts.id
+      FROM Hosts
+      INNER JOIN Authentication ON Hosts.username = Authentication.username
+      WHERE Hosts.username = %s AND Authentication.password = %s
+    '''
+    values = (username, password)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    cursor.close()
+    mysqlConn.close()
+    return result
+
+  @staticmethod
+  def get_all_bookings_by_id (hostId):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT B.id, B.renter_id
+      FROM Bookings B
+      INNER JOIN Listings L ON B.listing_id = L.id AND L.hostId = %s
+    '''
+    values = (hostId,)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+
   """
   Returns a host from the host table
   by SIN
@@ -210,8 +243,7 @@ class Host:
   Insert a new availability into the availability table
   """
   @staticmethod
-  def insert_one_availability (listing_id, date):
-    mysqlConn = Host.get_mysql_connection()
+  def insert_one_availability (mysqlConn, listing_id, date):
     cursor = mysqlConn.cursor()
     query = '''
       INSERT INTO Availability (listing_id, date)
@@ -221,7 +253,6 @@ class Host:
     cursor.execute(query, values)
     cursor.close()
     mysqlConn.commit()
-    mysqlConn.close()
 
   """
   Remove an availability from the availability table
@@ -489,13 +520,11 @@ class Host:
     mysqlConn = Host.get_mysql_connection()
     cursor = mysqlConn.cursor(dictionary=True)
     allListingsWithRevenue = Host.get_listings_with_revenue_generated()
-    print(allListingsWithRevenue)
     currListingRevenue = 0
     for listing in allListingsWithRevenue:
       if listing['id'] == listing_id:
         currListingRevenue = listing['revenue']
         break
-    print(currListingRevenue)
     # Remove the current listing from the list, and all listings that have less revenue than the current listing
     betterPerformingListings = []
     for listing in allListingsWithRevenue:
