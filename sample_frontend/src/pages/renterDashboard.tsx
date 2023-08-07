@@ -212,6 +212,8 @@ export default function RenterDashboard(){
 
     const handleNavigateToListing = (listingId: string) => {
       // TODO: Navigate to listing page
+      localStorage.setItem('listingId', listingId)
+      window.location.href = '/listing'
     }
 
     const ListingCard = (address: string , city: string, country: string, 
@@ -387,9 +389,10 @@ export default function RenterDashboard(){
               searchResults.map((listing: any) => {
                 const distance = searchType == "LongLat" && listing.distance ? 
                                       listing.distance.toFixed(2) : 0
+                console.log(listing)
                 return ListingCard(listing.address, listing.city, listing.country, 
                   listing.postalCode, listing.longitude, listing.latitude, 
-                  listing.price, listing.listingId, distance)
+                  listing.price, listing.id, distance)
               })
             }
         </div>

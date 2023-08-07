@@ -14,6 +14,7 @@ export default function Listing() {
   const [bookings, setBookings] = React.useState([])
   const [availabilities, setAvailabilities] = React.useState([])
   const [newAvailability, setNewAvailability] = React.useState({startDate: '', endDate: ''})
+  const [role, setRole] = React.useState('' as string)
 
   const handleChangeAmenities = async (newValue: MultiValue<{ value: any; label: any; }>, 
       actionMeta: ActionMeta<{ value: any; label: any; }>) => {
@@ -75,10 +76,13 @@ export default function Listing() {
           {date}
         </div>
         <div>
-          <button onClick={()=>{handleRemoveAvail(listing_id, date)}}
-            className="border-solid border-black border-2 rounded-md p-1">
-            Delete
-          </button>
+          {
+            role === 'host' &&
+            <button onClick={()=>{handleRemoveAvail(listing_id, date)}}
+              className="border-solid border-black border-2 rounded-md p-1">
+              Delete
+            </button>
+          }
         </div>
       </div>
     )
@@ -113,27 +117,33 @@ export default function Listing() {
 
   const ReviewCard = (comment: string, date: string, 
       rating: string, renterUsername: string) => 
-      (<div className="flex flex-col border-solid p-2
-       border-black border-2 rounded-md">
-        <div>
-          Renter: {renterUsername}
+      (
+        <div className="flex flex-col border-solid p-2
+        border-black border-2 rounded-md">
+          <div>
+            Renter: {renterUsername}
+          </div>
+          <div>
+            Rating: {rating}
+          </div>
+          <div>
+            Comment: {comment}
+          </div>
+          <div>
+            Date: {date}
+          </div>
         </div>
-        <div>
-          Rating: {rating}
-        </div>
-        <div>
-          Comment: {comment}
-        </div>
-        <div>
-          Date: {date}
-        </div>
-      </div>
       )
 
   useEffect(() => {
     const fetchData = async () => {
       // Fetch listing data
       const listingId = localStorage.getItem('listingId')
+      const role = localStorage.getItem('role')
+
+      if(role)
+        setRole(role)
+
       if(listingId)
         setListingId(listingId)
       const listingData = await fetch('http://localhost:5000/getListingById?id=' 
@@ -197,25 +207,41 @@ export default function Listing() {
   }, [])
 
   const renderAmenityDropDown = () => {
+    const role = localStorage.getItem('role')
+    if(role === 'host') 
+      return (
+        <div className="m-5">
+          <Select
+            isMulti
+            name="amenities"
+            defaultValue={amenities}
+            options={allAmenities}
+            onChange={handleChangeAmenities}
+            className="basic-multi-select"
+            classNamePrefix="select"
+          />
+        </div>
+      )
+    
     return (
       <div className="m-5">
         <Select
           isMulti
           name="amenities"
           defaultValue={amenities}
-          options={allAmenities}
+          options={[]}
           onChange={handleChangeAmenities}
           className="basic-multi-select"
           classNamePrefix="select"
+          isDisabled={true}
         />
       </div>
-      
     )
+      
+
   }
 
-  async function cancelBooking(bookingId: string) {
-    console.log(bookingId)
-    // Process booking cancellation
+  const hostCancelBooking = async (bookingId: string) => {
     const cancellationResult = await fetch('http://localhost:5000/hostCancelBooking', {
       method: 'POST',
       headers: {
@@ -232,6 +258,36 @@ export default function Listing() {
     // Update the bookings state
     const new_bookings = bookings.filter((booking: any) => booking.id !== bookingId)
     setBookings(new_bookings)
+  }
+
+  const renterCancelBooking = async (bookingId: string) => {
+    const cancellationResult = await fetch('http://localhost:5000/renterCancelBooking', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({bookingId: bookingId, renterId: localStorage.getItem('userId')})
+    })
+
+    if(!cancellationResult.ok) {
+      alert('Failed to cancel booking')
+      return
+    }
+
+    // Update the bookings state
+    const new_bookings = bookings.filter((booking: any) => booking.id !== bookingId)
+    setBookings(new_bookings)
+  }
+
+  async function cancelBooking(bookingId: string) {
+    // Process booking cancellation
+    const role = localStorage.getItem('role')
+    if(role === 'host') {
+      hostCancelBooking(bookingId)
+    }
+    else {
+      renterCancelBooking(bookingId)
+    }
   }
 
   const handleAddAvailability = async () => {
@@ -264,6 +320,27 @@ export default function Listing() {
         avail.date = avail.date.replace('00:00:00 GMT', '')
       })
       setAvailabilities(availabilityJson.availabilities)
+    }
+  }
+
+  const handleBookListing = async () => {
+    // TODO : Handle booking a listing
+    const startDate = newAvailability.startDate
+    const endDate = newAvailability.endDate
+    const listingId = localStorage.getItem('listingId')
+    const renterId = localStorage.getItem('userId')
+    const sendData = await fetch('http://localhost:5000/insertBooking', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({listingId: listingId, renterId: renterId,
+        startDate: startDate, endDate: endDate})
+    })
+    const dataJson = await sendData.json()
+    if(!dataJson.success) {
+      alert('Failed to book listing')
+      return
     }
   }
 
@@ -312,9 +389,11 @@ export default function Listing() {
         {reviews.map((review: any) => ReviewCard(review.comment, review.date,
           review.rating, review.username))}
       </div>
-
+      
       <div className="flex items-center gap-5 m-5">
-        <div className="flex flex-col items-center">
+        {
+          role === 'host' &&
+          <div className="flex flex-col items-center">
           Add Availability:
           <div className="flex flex-col border-solid border-black 
                           border-2 rounded-md p-2">
@@ -332,7 +411,30 @@ export default function Listing() {
             </button>
           </div>
         </div>
-        
+        }
+
+        {
+          role === 'renter' &&
+          <div className="flex flex-col items-center">
+            Book Listing:
+            <div className="flex flex-col border-solid border-black
+                            border-2 rounded-md p-2">
+              Start Date: 
+              <input value={newAvailability.startDate}
+               onChange={(e) => {setNewAvailability({...newAvailability, startDate: e.target.value})}}
+               type="date"/>
+              End Date:
+              <input  value={newAvailability.endDate}
+                onChange={(e) => {setNewAvailability({...newAvailability, endDate: e.target.value})}}
+                type="date"/>
+              <button onClick={handleBookListing}
+               className="border-solid border-black border-2 rounded-md">
+                Book Listing
+              </button>
+            </div>
+          </div>
+        }
+
         <div className="flex flex-col gap-1 items-center max-h-56 overflow-scroll">
           All Availabilities:
           {availabilities.map((avail: any) => AvailabilityCard(avail.listing_id, avail.date))}
@@ -348,7 +450,12 @@ export default function Listing() {
       </div>
 
       <div className="m-5">
-        <button onClick={()=>{window.location.href = '/hostListings'}}
+        <button onClick={()=>{
+          if(role === 'host')
+            window.location.href = '/hostListings'
+          else
+            window.location.href = '/renterDashboard'
+        }}
           className="border-solid border-black border-2 rounded-md p-1">
           Back
         </button>

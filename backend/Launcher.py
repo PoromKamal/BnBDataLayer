@@ -57,6 +57,12 @@ def register():
     Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Canada", "M3C2T2",
                             "33.065", "-71.065", "23.00")
     
+    Host.insert_one_availability (1, "2023-08-07")
+    Host.insert_one_availability (1, "2023-08-08")
+    Host.insert_one_availability (1, "2023-08-09")
+    Host.insert_one_availability (1, "2023-08-10")
+    Host.insert_one_availability (1, "2023-08-11")
+    
     amenityId = Host.get_amenity_id_by_name("Air Conditioning")
     Host.insert_one_listing_amenity (1, amenityId)
   
@@ -198,8 +204,8 @@ def renterCancelBooking():
 @cross_origin(origin="*")
 def hostCancelBooking():
   bookingId = request.json['bookingId']
-  renterId = request.json['hostId']
-  success = Host.cancel_booking(bookingId, renterId)
+  hostId = request.json['hostId']
+  success = Host.cancel_booking(bookingId, hostId)
   if(not success):
     return {"success": False, 
           "message": "Booking does not exist or has already passed"}, 400
@@ -372,6 +378,20 @@ def searchByAddress():
 
   results = Renter.search_listings_by_address(streetAddress, city, country, filterDict)
   return {"success": True, "results": results}
+
+@app.route("/insertBooking", methods=['POST'])
+@cross_origin(origin="*")
+def bookListing():
+  renterId = request.json['renterId']
+  listingId = request.json['listingId']
+  startDate = request.json['startDate']
+  endDate = request.json['endDate']
+  success = Renter.insert_one_booking(listingId, renterId, startDate, endDate)
+  if(not success):
+    return {"success": False, 
+          "message": "Could not book"}, 400
+  return {"message": "Booking added successfully", "success": True}
+
 
 
 def setup_database():

@@ -86,7 +86,17 @@ class Renter:
   def insert_one_booking (listing_id, renter_id, start_date, end_date):
     mysqlConn = Renter.get_mysql_connection()
     cursor = mysqlConn.cursor()
-    # TODO: Check if already booked
+    # TODO: Check if conflicts with other bookings
+    query = '''
+      SELECT * FROM Bookings
+      WHERE listing_id = %s AND (start_date <= %s OR end_date >= %s)
+    '''
+    values = (listing_id, start_date, start_date)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    if result != None:
+      cursor.close()
+      return False
     # TODO: Check if dates in {start_date, end_date} is available
     query = '''
       INSERT INTO Bookings (listing_id, renter_id, start_date, end_date)
@@ -97,6 +107,7 @@ class Renter:
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True
 
   """
     Removes a booking from the booking table
