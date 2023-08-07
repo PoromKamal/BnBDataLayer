@@ -21,17 +21,15 @@ export default function RenterDashboard(){
     }
     
     function handleDeleteAccount(){
-      const hostId = localStorage.getItem('userId')
+      const renterId = localStorage.getItem('userId')
       localStorage.removeItem('userId')
       localStorage.removeItem('role')
-      fetch("http://localhost:5000/deleteHost", {
+      fetch("http://localhost:5000/deleteRenter", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          hostId: hostId,
-        }),
+        body: JSON.stringify({renterId}),
       }).then((res) => {
         if (res.status === 200) {
           alert("Account deleted successfully");
