@@ -297,3 +297,42 @@ class Reports:
       print(row)
     cursor.close()
     return result
+  
+  def get_all_listing_comments ():
+    cursor = Reports.mysql.cursor(dictionary=True)
+    query = '''
+      SELECT comment, listing_id
+      FROM ListingRatings
+    '''
+    cursor.execute(query)
+    result = cursor.fetchall()
+    cursor.close()
+    return result
+
+
+  @staticmethod
+  def get_common_noun_phrases_for_listings():
+    cursor = Reports.mysql.cursor(dictionary=True)
+    allListingComments = Reports.get_all_listing_comments()
+    result = {}
+    for comment in allListingComments:
+      if comment['listing_id'] not in result:
+        result[comment['listing_id']] = {}
+      
+      currOcc = {}
+      for word in comment['comment'].split():
+        if word not in currOcc:
+          currOcc[word] = 0
+        currOcc[word] += 1
+
+      for word in currOcc:
+        if word not in result[comment['listing_id']]:
+          result[comment['listing_id']][word] = 0
+        result[comment['listing_id']][word] += currOcc[word]
+      
+    for listing in result:
+      result[listing] = sorted(result[listing].items(), key=lambda x: x[1], reverse=True)
+    cursor.close()
+    return result
+  
+

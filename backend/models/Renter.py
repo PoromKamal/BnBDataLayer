@@ -149,7 +149,7 @@ class Renter:
   @staticmethod
   def insert_one_booking (listing_id, renter_id, start_date, end_date):
     mysqlConn = Renter.get_mysql_connection()
-    cursor = mysqlConn.cursor()
+    cursor = mysqlConn.cursor(dictionary=True)
     # Check if there are available dates
     query = '''
       SELECT * FROM Availability
@@ -170,15 +170,16 @@ class Renter:
     # TODO: Check if conflicts with other bookings
     query = '''
       SELECT * FROM Bookings
-      WHERE listing_id = %s AND (start_date <= %s AND end_date >= %s)
+      WHERE listing_id = %s AND ((start_date <= %s AND end_date >= %s)
       OR (start_date >= %s AND end_date >= %s)
-      OR (start_date >= %s AND end_date <= %s)
+      OR (start_date >= %s AND end_date <= %s))
     '''
     values = (listing_id, start_date, start_date, start_date, end_date, 
               start_date, end_date)
     cursor.execute(query, values)
     result = cursor.fetchall()
     if len(result) > 0:
+      print(result, start_date, end_date, listing_id)
       cursor.close()
       return False
     # TODO: Check if dates in {start_date, end_date} is available

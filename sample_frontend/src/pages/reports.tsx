@@ -17,6 +17,7 @@ export default function ReportsPage(){
   const [rankRentersByCity, setRankRentersByCity] = React.useState([] as any)
   const [rankRentersCancellations, setRankRentersCancellations] = React.useState([] as any)
   const [rankHostsCancellations, setRankHostsCancellations] = React.useState([] as any)
+  const [commonNounPhrases, setCommonNounPhrases] = React.useState([] as any)
 
   const reports = [
     {"label": "Total number of Listings By Country", 
@@ -211,6 +212,19 @@ export default function ReportsPage(){
     }
 
     setRankHostsCancellations(rankHostsCancellationsDataJson.hosts)
+    setDataLoaded(true)
+  }
+
+  const fetchCommonNounPhrases = async () => {
+    let url = 'http://localhost:5000/getCommonNounPhrases'
+    const commonNounPhrasesData = await fetch(url)
+    const commonNounPhrasesDataJson = await commonNounPhrasesData.json()
+    if(!commonNounPhrasesDataJson.success){
+      alert("Failed to fetch data")
+      return;
+    }
+
+    setCommonNounPhrases(commonNounPhrasesDataJson.phrases)
     setDataLoaded(true)
   }
 
@@ -421,6 +435,30 @@ export default function ReportsPage(){
     })
   }
 
+  const renderCommonNounPhrases = () => {
+    return Object.keys(commonNounPhrases).map((listingId:any) => {
+      return(
+        <div className='flex flex-col gap-5 justify-between
+        border-solid border-black border-2 rounded-sm'>
+          <h1>Listing Id: {listingId}</h1>
+          <h1>Phrase, Count</h1>
+          {
+            Object.keys(commonNounPhrases[listingId]).map((phrase:any) => {
+              return(
+                <div className="flex flex-row justify-between">
+                  <h1>{commonNounPhrases[listingId][phrase][0]}</h1>
+                  <h1>{commonNounPhrases[listingId][phrase][1]}</h1>
+                </div>
+              )
+            }
+            )
+          }
+        </div>
+      )
+    })
+  }
+
+
   const renderReport =  () => {
     switch(selectedReport){
       case 1:
@@ -540,6 +578,14 @@ export default function ReportsPage(){
             }
           </div>
         )
+      case 14:
+        return(
+          <div className='flex flex-col gap-1'>
+            {
+              renderCommonNounPhrases()
+            }
+          </div>
+        )
       default:
         return <div></div>
     }
@@ -587,6 +633,9 @@ export default function ReportsPage(){
         break;
       case 13:
         fetchRankHostsCancellations()
+        break;
+      case 14:
+        fetchCommonNounPhrases()
         break;
       default:
         break;

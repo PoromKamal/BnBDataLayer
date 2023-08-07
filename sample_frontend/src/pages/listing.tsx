@@ -15,6 +15,7 @@ export default function Listing() {
   const [availabilities, setAvailabilities] = React.useState([])
   const [newAvailability, setNewAvailability] = React.useState({startDate: '', endDate: ''})
   const [role, setRole] = React.useState('' as string)
+  const [recommendedAmenities, setRecommendedAmenities] = React.useState([] as { value: any; label: any }[])
 
   const handleChangeAmenities = async (newValue: MultiValue<{ value: any; label: any; }>, 
       actionMeta: ActionMeta<{ value: any; label: any; }>) => {
@@ -195,8 +196,16 @@ export default function Listing() {
       const reviewData = await fetch('http://localhost:5000/getReviewsByListingId?id='
                                 + listingId)
       const reviewJson = await reviewData.json()
+
+      // Fetch recommended amenities
+      const recommendedAmenityData 
+        = await fetch('http://localhost:5000/getRecommendedAmenities?listingId=' + listingId)
+      
+      const recommendedAmenityJson = await recommendedAmenityData.json()
+
       console.log(reviewJson)
       setReviews(reviewJson.reviews)
+      setRecommendedAmenities(recommendedAmenityJson.amenities)
       setBookings(bookingJson.bookings)
       setAvailabilities(availabilityJson.availabilities)
       setAllAmenities(newAllAmens)
@@ -471,6 +480,35 @@ export default function Listing() {
           Back
         </button>
       </div>
+      {
+        role === 'host' &&
+        <div className="flex flex-col">
+          Host Toolkit (Recommended Amenities)
+          <div className="flex flex-row justify-between">
+            <div>
+              Amenity
+            </div>
+            <div>
+              Projected Increase
+            </div>
+          </div>
+          {
+            recommendedAmenities.map((amenity: any) => {
+              return <div className="flex flex-row justify-between 
+                border-solid border-black border-2 rounded-md p-2">
+                <div>
+                  {amenity.name}
+                </div>
+                <div>
+                  ${amenity.projectedIncrease} + 
+                </div>
+              </div>
+            })
+          }
+
+        </div>
+      }
+
 
     </div>)
 

@@ -165,7 +165,8 @@ create_listing_rating_table = '''
       IF NOT EXISTS(
         SELECT 1
         FROM Bookings
-        WHERE renter_id = NEW.renter_id AND listing_id = NEW.listing_id AND end_date < CURDATE()
+        WHERE renter_id = NEW.renter_id AND 
+        listing_id = NEW.listing_id AND end_date < CURDATE()
         AND DATEDIFF(CURDATE(), end_date) <= 180
         ) THEN
         SIGNAL SQLSTATE '45000'

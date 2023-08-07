@@ -453,3 +453,77 @@ class Host:
     mysqlConn.commit()
     mysqlConn.close()
     return True
+  
+  def get_listings_with_revenue_generated ():
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT L.*, SUM(B.price_paid) AS revenue
+      FROM Listings L
+      INNER JOIN Bookings B ON L.id = B.listing_id
+      GROUP BY L.id
+    '''
+    cursor.execute(query)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+  
+  def get_amenity_name_by_id (amenity_id):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor()
+    query = '''
+      SELECT name FROM Amenities
+      WHERE id = %s
+    '''
+    values = (amenity_id,)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    cursor.close()
+    mysqlConn.close()
+    return result[0]
+
+  def get_recommended_amenities (listing_id):
+    currAmenities = Host.get_listing_amenities(listing_id)
+    currAmenities = [amenity['id'] for amenity in currAmenities]
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    allListingsWithRevenue = Host.get_listings_with_revenue_generated()
+    print(allListingsWithRevenue)
+    currListingRevenue = 0
+    for listing in allListingsWithRevenue:
+      if listing['id'] == listing_id:
+        currListingRevenue = listing['revenue']
+        break
+    print(currListingRevenue)
+    # Remove the current listing from the list, and all listings that have less revenue than the current listing
+    betterPerformingListings = []
+    for listing in allListingsWithRevenue:
+      if listing['id'] != listing_id and listing['revenue'] > currListingRevenue:
+        betterPerformingListings.append(listing)
+      
+    # Check the amenities of the better performing listings, which are not in the current listing
+    recommendedAmenities = []
+    for listing in betterPerformingListings:
+      amenities = Host.get_listing_amenities(listing['id'])
+      diffAmenities = set()
+      for amenity in amenities:
+        if amenity['id'] not in currAmenities:
+          diffAmenities.add(amenity['id'])
+        # Projected increase per amenity 
+        # = (revenue better listing - revenue curr listing) / (number of amenities)
+        if(len(diffAmenities) == 0):
+          continue
+        projectedIncrease = (listing['revenue'] - currListingRevenue) / len(diffAmenities)
+        for amenity in diffAmenities:
+          if amenity not in recommendedAmenities:
+            recommendedAmenities.append({
+              'id': amenity,
+              "name": Host.get_amenity_name_by_id(amenity),
+              'projectedIncrease': projectedIncrease
+            })
+    recommendedAmenities.sort(key=lambda x: x['projectedIncrease'], reverse=True)
+    cursor.close()
+    mysqlConn.close()
+    return recommendedAmenities
+    

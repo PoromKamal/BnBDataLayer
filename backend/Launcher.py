@@ -78,33 +78,55 @@ def register():
     return {"success": True, "message": "Successfully registered", "id": newId}
   
   if(role == "host"):
-    newId = Host.insert_one_host(name, username, password, 
+    hostId = Host.insert_one_host(name, username, password, 
                              dateOfBirth, SIN, address, occupation)
-    if(newId is None):
+    if(hostId is None):
       return {"success": False, "message": "Username already exists"}, 400
+    Host.insert_one_listing (hostId, "1234 Main St", "Toronto", "Canada", 
+                              "M1C2T2", "33", "-71", "354.00")
+    Host.insert_one_listing(hostId, "1234 Secondary St", "Brampton", "Canada", "M1C3T2",
+                            "33.06", "-71.06", "3434.00")
+    Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Bangladesh", "M3C2T2",
+                            "33.063", "-71.065", "23.00")
+    Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "China", "M3C2T2",
+                          "33.062", "-71.065", "23.00")
+    Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Japan", "M3C2T2",
+                          "33.061", "-71.065", "23.00")
     
-    # Some dummy listings 
-    Host.insert_one_listing(newId, "1234 Main St", "Toronto", 
-                            "Canada", "M1C2T2", "33", "-71", "354.00")
-    Host.insert_one_listing(newId, "1234 Secondary St", "Brampton",
-                            "Canada", "M1C3T2", "33.06", "-71.06", "3434.00")
-    
-    renterId = Renter.insert_one_renter ("Ryan", "Ryan2", "password", "2000-01-01", "234567899", "1234 Trail St", "Student")
-    
-    Host.insert_one_availability (1, "2023-08-04")
-    Host.insert_one_availability (1, "2023-08-05")
-    Host.insert_one_availability (1, "2023-08-06")
-    Host.insert_one_availability (1, "2023-08-07")
-    Host.insert_one_availability (1, "2023-08-08")
-    
-    Renter.insert_one_booking (1, renterId, "2023-08-04", "2023-08-05")
-    Renter.insert_one_listing_rating (renterId, 1, 5, "Great place!")
-    
+    Host.insert_one_listing_amenity (2, 1)
+    Host.insert_one_listing_amenity (2, 3)
+    Host.insert_one_listing_amenity (2, 2)
     Host.insert_one_listing_amenity (1, 1)
-    Host.insert_one_listing_amenity (1, 3)
-    Host.insert_one_listing_amenity (1, 2)
-        
-    return {"success": True, "message": "Successfully registered", "id": newId}
+    renterId = Renter.insert_one_renter ("Ryan", "Ryan2", "password", "2000-01-01", "234567899", "1234 Trail St", "Student")
+    renter2Id = Renter.insert_one_renter ("Ryan", "Ryan3", "password", "2000-01-01", "255567899", "1234 Trail St", "Student")
+    Host.insert_one_availability (1, "2023-07-04")
+    Host.insert_one_availability (1, "2023-07-05")
+    Host.insert_one_availability (1, "2023-07-06")
+    Host.insert_one_availability (1, "2023-07-07")
+    Host.insert_one_availability (1, "2023-07-08")
+
+    Host.insert_one_availability (2, "2023-07-04")
+    Host.insert_one_availability (2, "2023-07-05")
+    Host.insert_one_availability (2, "2023-07-06")
+    Host.insert_one_availability (2, "2023-07-07")
+    Host.insert_one_availability (2, "2023-07-08")
+
+    Host.insert_one_availability (3, "2023-08-04")
+    Host.insert_one_availability (3, "2023-08-05")
+    Host.insert_one_availability (3, "2023-08-06")
+    Host.insert_one_availability (3, "2023-08-07")
+    Host.insert_one_availability (3, "2023-08-08")
+
+    Renter.insert_one_booking (1, renterId, "2023-07-04", "2023-07-06")
+    Renter.insert_one_booking (2, renterId, "2023-07-05", "2023-07-06")
+    Renter.insert_one_booking (1, renter2Id, "2023-07-07", "2023-07-08")
+
+    Renter.insert_one_listing_rating (renterId, 1, 5, "Great place!")
+    Renter.insert_one_listing_rating (renterId, 2, 2, "Decent place!")
+    Renter.insert_one_listing_rating (renter2Id , 1, 3, "Great place!")
+
+          
+    return {"success": True, "message": "Successfully registered", "id": hostId}
   
   return {"success": False, "message": "Invalid role"}, 400
 
@@ -394,6 +416,13 @@ def searchLongLat():
                                                  filterDict, orderBy)
   return {"success": True, "results": results}
 
+@app.route("/getCommonNounPhrases", methods=['GET'])
+@cross_origin(origin="*")
+def getCommonNounPhrases():
+  return {"success": True, 
+          "phrases": Reports.get_common_noun_phrases_for_listings()}
+
+
 @app.route("/getTotalListingsByCountry", methods=['GET'])
 @cross_origin(origin="*")
 def getTotalListings():
@@ -506,6 +535,12 @@ def bookListing():
           "message": "Could not book"}, 400
   return {"message": "Booking added successfully", "success": True}
 
+@app.route("/getRecommendedAmenities", methods=['GET'])
+@cross_origin(origin="*")
+def getRecommendedAmenities():
+  listingId = request.args.get('listingId')
+  return {"success": True, 
+          "amenities": Host.get_recommended_amenities(listingId)}
 
 
 def setup_database():
@@ -534,6 +569,7 @@ def setup_amenities():
 if __name__ == '__main__':
   setup_database()
   setup_amenities()
+  """
   hostId = Host.insert_one_host ("Porom", "asdf", "test", "2002-01-01", 
                           "312411111", "1234 Main St",  "Student")
                           
@@ -547,18 +583,24 @@ if __name__ == '__main__':
                         "33.062", "-71.065", "23.00")
   Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Japan", "M3C2T2",
                         "33.061", "-71.065", "23.00")
+  
+  Host.insert_one_listing_amenity (2, 1)
+  Host.insert_one_listing_amenity (2, 3)
+  Host.insert_one_listing_amenity (2, 2)
+  Host.insert_one_listing_amenity (1, 1)
   renterId = Renter.insert_one_renter ("Ryan", "Ryan2", "password", "2000-01-01", "234567899", "1234 Trail St", "Student")
-  Host.insert_one_availability (1, "2023-08-04")
-  Host.insert_one_availability (1, "2023-08-05")
-  Host.insert_one_availability (1, "2023-08-06")
-  Host.insert_one_availability (1, "2023-08-07")
-  Host.insert_one_availability (1, "2023-08-08")
+  renter2Id = Renter.insert_one_renter ("Ryan", "Ryan3", "password", "2000-01-01", "255567899", "1234 Trail St", "Student")
+  Host.insert_one_availability (1, "2023-07-04")
+  Host.insert_one_availability (1, "2023-07-05")
+  Host.insert_one_availability (1, "2023-07-06")
+  Host.insert_one_availability (1, "2023-07-07")
+  Host.insert_one_availability (1, "2023-07-08")
 
-  Host.insert_one_availability (2, "2023-08-04")
-  Host.insert_one_availability (2, "2023-08-05")
-  Host.insert_one_availability (2, "2023-08-06")
-  Host.insert_one_availability (2, "2023-08-07")
-  Host.insert_one_availability (2, "2023-08-08")
+  Host.insert_one_availability (2, "2023-07-04")
+  Host.insert_one_availability (2, "2023-07-05")
+  Host.insert_one_availability (2, "2023-07-06")
+  Host.insert_one_availability (2, "2023-07-07")
+  Host.insert_one_availability (2, "2023-07-08")
 
   Host.insert_one_availability (3, "2023-08-04")
   Host.insert_one_availability (3, "2023-08-05")
@@ -566,14 +608,17 @@ if __name__ == '__main__':
   Host.insert_one_availability (3, "2023-08-07")
   Host.insert_one_availability (3, "2023-08-08")
 
-  Renter.insert_one_booking (1, renterId, "2023-08-04", "2023-08-08")
-  Renter.insert_one_booking (2, renterId, "2023-08-05", "2023-08-08")
-  Renter.insert_one_booking (3, renterId, "2023-08-06", "2023-08-08")
+  Renter.insert_one_booking (1, renterId, "2023-07-04", "2023-07-06")
+  Renter.insert_one_booking (2, renterId, "2023-07-05", "2023-07-06")
+  Renter.insert_one_booking (1, renter2Id, "2023-07-07", "2023-07-08")
 
-  Renter.cancel_booking (1, renterId)
-  Renter.cancel_booking (2, renterId)
-  Host.cancel_booking (3, hostId)
-  """
+  Renter.insert_one_listing_rating (renterId, 1, 5, "Great place!")
+  Renter.insert_one_listing_rating (renterId, 2, 2, "Decent place!")
+  Renter.insert_one_listing_rating (renter2Id , 1, 3, "Great place!")
+
+  recommended = Host.get_recommended_amenities (1)
+  print(recommended)
+
   Host.insert_one_host ("Porom", "1999-01-01", "123456789", "1234 Main St",  "Student")
   Host.insert_one_host ("Sarraf", "1999-01-01", "345678912", "79 Main St",  "Student")
   Renter.insert_one_renter ("Ryan", "2000-01-01", "234567899", "1234 Trail St", "Student")
