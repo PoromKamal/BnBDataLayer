@@ -10,9 +10,12 @@ export default function RenterDashboard(){
     const [city, setCity] = useState('')
     const [country, setCountry] = useState('')
     const [radius, setRadius] = useState('')
+    const [order, setOrder] = useState('ascending')
     const [filters, setFilter] = useState({ minPrice: '', maxPrice: '', 
     rating: '', amenities: '', startDate: '', endDate: '', postalCode: '' })
+    const [orderBy, setOrderBy] = useState('')
     const [searchResults, setSearchResults] = useState([])
+
 
     useEffect(() => {
       //TODO: Initialize search results with every listing
@@ -90,6 +93,15 @@ export default function RenterDashboard(){
       if(filters.endDate != ''){
         url += '&endDate=' + filters.endDate
       }
+      
+      if(order != ''){
+        url += '&order=' + order
+      }
+
+      if(searchType == "LongLat" && orderBy != ''){
+        url += '&orderBy=' + orderBy
+      }
+
       return url
     }
 
@@ -278,6 +290,33 @@ export default function RenterDashboard(){
                 <input value = {filters.endDate} onChange={e => setFilter({...filters, endDate: e.target.value})}
                   type="date" className="border-solid border-2 rounded-md" placeholder='End Date'/>
               </div>
+            </div>
+          </div>
+            {
+              searchType == "LongLat" &&
+              (
+                <div>
+                  <label htmlFor="order">Order By </label>
+                  <div className="flex gap-2">
+                    <input onChange = {e => setOrderBy(e.target.value)}
+                    type="radio" id="distance" name="orderBy" value="distance"/>
+                    <label htmlFor="distance">distance</label>
+                    <input onChange = {e => setOrderBy(e.target.value)}
+                      type="radio" id="price" name="orderBy" value="price"/>
+                    <label htmlFor="price">price</label>
+                  </div>
+                </div>
+              )
+            }
+          <div>
+            <label htmlFor="order">Order </label>
+            <div className="flex gap-2">
+              <input onChange = {e => setOrder(e.target.value)}
+              type="radio" id="ascending" name="order" value="ascending"/>
+              <label htmlFor="ascending">ascending</label>
+              <input onChange = {e => setOrder(e.target.value)}
+                type="radio" id="descending" name="order" value="descending"/>
+              <label htmlFor="descending">descending</label>
             </div>
           </div>
           <div>

@@ -279,7 +279,7 @@ def searchLongLat():
   longitude = request.args.get('longitude')
   latitude = request.args.get('latitude')
   radius = request.args.get('radius')
-  searchBy = request.args.get('searchBy')
+  orderBy = request.args.get('orderBy')
   order = request.args.get('order') or "ascending"
 
   minPrice = request.args.get('minPrice') or None
@@ -299,14 +299,14 @@ def searchLongLat():
     'postalCode' : postalCode
   }
 
-  if(not searchBy):
-    searchBy = "distance"
+  if(not orderBy):
+    orderBy = "distance"
   
   if(not order):
     order = "ascending" # Default to ascending
 
   results = Renter.search_listings_by_proximity (longitude, latitude, radius, 
-                                                 filterDict, searchBy)
+                                                 filterDict, orderBy)
   return {"success": True, "results": results}
 
 @app.route("/searchByPostalCode", methods=['GET'])
