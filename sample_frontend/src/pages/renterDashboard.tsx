@@ -380,6 +380,12 @@ export default function RenterDashboard(){
               renderFilters()
             }
           </div>
+          <div>
+            <button onClick={() => {window.location.href = '/renterProfile'}}
+              className="border-solid border-2 rounded-md p-1 bg-gray-500">
+              Profile
+            </button>
+          </div>
         </div>
 
 

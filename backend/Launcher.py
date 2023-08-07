@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from flask import Flask, request
 import mysql.connector
 from queries import setup_queries
@@ -57,11 +57,17 @@ def register():
     Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Canada", "M3C2T2",
                             "33.065", "-71.065", "23.00")
     
+    Host.insert_one_availability (1, "2023-08-04")
+    Host.insert_one_availability (1, "2023-08-05")
+    Host.insert_one_availability (1, "2023-08-06")
+
     Host.insert_one_availability (1, "2023-08-07")
     Host.insert_one_availability (1, "2023-08-08")
     Host.insert_one_availability (1, "2023-08-09")
     Host.insert_one_availability (1, "2023-08-10")
     Host.insert_one_availability (1, "2023-08-11")
+    Renter.insert_one_booking (1, newId, "2023-08-04", "2023-08-06") 
+    Host.insert_one_renter_rating (newId, hostId, 3, "Great renter!")
     
     amenityId = Host.get_amenity_id_by_name("Air Conditioning")
     Host.insert_one_listing_amenity (1, amenityId)
@@ -252,12 +258,26 @@ def removeListingAmenity():
           "message": "Amenity does not exist for this listing"}, 400
   return {"message": "Amenity removed successfully", "success": True}
 
+@app.route("/getReviewsOfRenter", methods=['GET'])
+@cross_origin(origin="*")
+def getReviewsOfRenter():
+  renterId = request.args.get('id')
+  return {"success": True, 
+          "reviews": Renter.get_reviews_of_renter(renterId)}
+
 @app.route("/getReviewsByListingId", methods=['GET'])
 @cross_origin(origin="*")
 def getReviewsByListingId():
   listingId = request.args.get('id')
   return {"success": True, 
           "reviews": Host.get_reviews_by_listing_id(listingId)}
+
+@app.route("/getRenterById", methods=['GET'])
+@cross_origin(origin="*")
+def getRenterById():
+  renterId = request.args.get('id')
+  return {"success": True, 
+          "renter": Renter.get_one_renter_by_id(renterId)}
 
 @app.route("/getRecentRenters", methods=['GET'])
 @cross_origin(origin="*")
@@ -266,6 +286,26 @@ def getRecentRenters():
   days = 180
   return {"success": True, 
           "renters": Host.get_recent_renters(hostId, days)}
+
+@app.route("/insertPaymentMethod", methods=['POST'])
+@cross_origin(origin="*")
+def insertPaymentMethod():
+  renterId = request.json['renterId']
+  cardNumber = request.json['cardNumber']
+  expiryDate = request.json['expiryDate']
+  cvv = request.json['cvv']
+  success = Renter.insert_one_payment_method(renterId, cardNumber, expiryDate, cvv)
+  if(not success):
+    return {"success": False, 
+          "message": "Payment method already exists"}, 400
+  return {"message": "Payment method added successfully", "success": True}
+
+@app.route("/getAllPaymentMethods", methods=['GET'])
+@cross_origin(origin="*")
+def getAllPaymentMethods():
+  renterId = request.args.get('renterId')
+  return {"success": True, 
+          "paymentMethods": Renter.get_all_payment_method_by_id(renterId)}
 
 @app.route("/insertRenterRating", methods=['POST'])
 @cross_origin(origin="*")
@@ -507,4 +547,4 @@ if __name__ == '__main__':
   #Renter.search_listings_by_postal_code("M1C2T2", filterDict)
   #Renter.search_listings_by_address("1234 Main St", filterDict)
   """
-  app.run(host="localhost", port=5000)
+  app.run(host="localhost", port=5000, threaded=True)

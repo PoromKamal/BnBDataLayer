@@ -1,3 +1,4 @@
+import datetime
 import mysql.connector
 
 from .Auth import Auth
@@ -42,6 +43,23 @@ class Renter:
     mysqlConn.close()
     return renter_id
 
+  @staticmethod
+  def get_reviews_of_renter (renterId):
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT Hosts.username, RenterRatings.*
+      FROM RenterRatings
+      INNER JOIN Hosts ON Hosts.id = RenterRatings.host_id
+      AND renter_id = %s
+    '''
+    values = (renterId,)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+
   """
   Removes a renter from the renter table
   """
@@ -78,6 +96,52 @@ class Renter:
     mysqlConn.close()
     return result[0]
   
+  @staticmethod
+  def get_one_renter_by_id (id):
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT * FROM Renters
+      WHERE id = %s
+    '''
+    values = (id,)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+    cursor.close()
+    mysqlConn.close()
+    return result
+  
+  @staticmethod
+  def insert_one_payment_method(renterId, cardNumber, expiry, cvv):
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor()
+    query = '''
+      INSERT INTO PaymentInformation (renter_id, card_number, security_code, expiry_date)
+      VALUES (%s, %s, %s, %s)
+    '''
+    values = (renterId, cardNumber, cvv, expiry)
+    cursor.execute(query, values)
+    cursor.close()
+    mysqlConn.commit()
+    mysqlConn.close()
+    return True
+
+  @staticmethod
+  def get_all_payment_method_by_id (renterId):
+    mysqlConn = Renter.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT * FROM PaymentInformation
+      WHERE renter_id = %s
+    '''
+    values = (renterId,)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+
+
   """
     Inserts a booking into the booking table
     for renter with renter_id
@@ -86,15 +150,35 @@ class Renter:
   def insert_one_booking (listing_id, renter_id, start_date, end_date):
     mysqlConn = Renter.get_mysql_connection()
     cursor = mysqlConn.cursor()
+    # Check if there are available dates
+    query = '''
+      SELECT * FROM Availability
+      WHERE listing_id = %s AND date BETWEEN %s AND %s
+    '''
+    values = (listing_id, start_date, end_date)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    if len(result) == 0:
+      cursor.close()
+      return False
+    
+    print(start_date, end_date)
+    startDate = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+    endDate = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    print(abs((endDate - startDate).days) + 1)
+    
     # TODO: Check if conflicts with other bookings
     query = '''
       SELECT * FROM Bookings
-      WHERE listing_id = %s AND (start_date <= %s OR end_date >= %s)
+      WHERE listing_id = %s AND (start_date <= %s AND end_date >= %s)
+      OR (start_date >= %s AND end_date >= %s)
+      OR (start_date >= %s AND end_date <= %s)
     '''
-    values = (listing_id, start_date, start_date)
+    values = (listing_id, start_date, start_date, start_date, end_date, 
+              start_date, end_date)
     cursor.execute(query, values)
-    result = cursor.fetchone()
-    if result != None:
+    result = cursor.fetchall()
+    if len(result) > 0:
       cursor.close()
       return False
     # TODO: Check if dates in {start_date, end_date} is available

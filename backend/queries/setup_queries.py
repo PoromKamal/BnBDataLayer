@@ -131,7 +131,7 @@ create_booking_table = '''
     FOREIGN KEY (renter_id) REFERENCES Renters(id)
       ON DELETE CASCADE
       ON UPDATE CASCADE,
-    CHECK (start_date < end_date)
+    CHECK (start_date <= end_date)
   );
   CREATE TRIGGER calculate_price_paid
     BEFORE INSERT ON Bookings

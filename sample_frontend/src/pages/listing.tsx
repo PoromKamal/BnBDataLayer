@@ -342,6 +342,17 @@ export default function Listing() {
       alert('Failed to book listing')
       return
     }
+    else{
+      // refetch bookings
+      const bookingData = await fetch('http://localhost:5000/getBookingsByListingId?id='
+                                + listingId)
+      const bookingJson = await bookingData.json()
+      bookingJson.bookings.forEach((booking: any) => {
+        booking.start_date = booking.start_date.replace('00:00:00 GMT', '')
+        booking.end_date = booking.end_date.replace('00:00:00 GMT', '')
+      })
+      setBookings(bookingJson.bookings)
+    }
   }
 
   return(
