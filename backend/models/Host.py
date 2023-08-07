@@ -399,6 +399,20 @@ class Host:
     return result
 
   @staticmethod
+  def get_all_listings ():
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor(dictionary=True)
+    query = '''
+      SELECT *
+      FROM Listings;
+    '''
+    cursor.execute(query)
+    result = cursor.fetchall()
+    cursor.close()
+    mysqlConn.close()
+    return result
+  
+  @staticmethod
   def cancel_booking (booking_id, host_id):
     mysqlConn = Host.get_mysql_connection()
     cursor = mysqlConn.cursor()

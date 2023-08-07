@@ -56,6 +56,11 @@ def register():
                             "33.06", "-71.06", "3434.00")
     Host.insert_one_listing(hostId, "1234 Third St", "Oshawa", "Canada", "M3C2T2",
                             "33.065", "-71.065", "23.00")
+    
+    amenityId = Host.get_amenity_id_by_name("Air Conditioning")
+    Host.insert_one_listing_amenity (1, amenityId)
+  
+
     if(newId is None):
       return {"success": False, "message": "Username already exists"}, 400
     return {"success": True, "message": "Successfully registered", "id": newId}
@@ -95,8 +100,13 @@ def register():
 @app.route("/getAllListings", methods=['GET'])
 @cross_origin(origin="*")
 def getAllListings():
-  hostId = request.args.get('hostId')
-  return {"success": True, "listings": Host.get_all_listings_by_host_id(hostId)}
+  hostId = request.args.get('hostId') or None
+  result = []
+  if(hostId):
+    result = Host.get_all_listings_by_host_id(hostId)
+  else:
+    result = Host.get_all_listings()
+  return {"success": True, "listings": result}
 
 @app.route("/getListingById", methods=['GET'])
 @cross_origin(origin="*")
@@ -321,7 +331,8 @@ def searchByPostalCode():
   startDate = request.args.get('startDate') or None
   endDate = request.args.get('endDate') or None
   minRating = request.args.get('minRating') or 1
-
+  amenities = amenities.split(",")
+  print(amenities)
   filterDict = {
     'price_range': (minPrice, maxPrice),
     'amenities' : amenities,
@@ -361,6 +372,7 @@ def searchByAddress():
 
   results = Renter.search_listings_by_address(streetAddress, city, country, filterDict)
   return {"success": True, "results": results}
+
 
 def setup_database():
   cusor = mysql.cursor()

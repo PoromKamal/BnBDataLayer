@@ -11,15 +11,33 @@ export default function RenterDashboard(){
     const [country, setCountry] = useState('')
     const [radius, setRadius] = useState('')
     const [order, setOrder] = useState('ascending')
+    const [allAmenities, setAllAmenities] = useState([])
     const [filters, setFilter] = useState({ minPrice: '', maxPrice: '', 
-    rating: '', amenities: '', startDate: '', endDate: '', postalCode: '' })
+    rating: '', amenities: [] as { value: any; label: any }[], startDate: '', endDate: '', postalCode: '' })
     const [orderBy, setOrderBy] = useState('')
     const [searchResults, setSearchResults] = useState([])
 
 
     useEffect(() => {
-      //TODO: Initialize search results with every listing
 
+      const fetchData = async () => {
+        // Initialize search results with every listing
+        const allListings = await fetch('http://localhost:5000/getAllListings')
+        const allListingsJson = await allListings.json()
+        setSearchResults(allListingsJson.listings)
+
+        // Fetch all amenities
+        const amenityData = await fetch('http://localhost:5000/getAllAmenities')
+        const amenityJson = await amenityData.json()
+        const formattedAmenities = amenityJson.amenities.map((amenity: any) => {
+          return {
+            value: amenity.name,
+            label: amenity.name
+          }
+        })
+        setAllAmenities(formattedAmenities)
+      }
+      fetchData()
     }, [])
 
     const searchTypes = [
@@ -77,11 +95,11 @@ export default function RenterDashboard(){
       if(filters.rating != ''){
         url += '&minRating=' + filters.rating
       }
-
-      if(filters.amenities != ''){
+      console.log(filters.amenities)
+      if(filters.amenities.length > 0){
         url += '&amenities='
         for(let i = 0; i < filters.amenities.length; i++){
-          url += filters.amenities[i] + ','
+          url += filters.amenities[i].value + ','
         }
         url = url.substring(0, url.length - 1)
       }
@@ -117,7 +135,6 @@ export default function RenterDashboard(){
       
       const searchResults = await fetch(url)
       const searchResultsJson = await searchResults.json()
-      console.log(searchResultsJson)
       setSearchResults(searchResultsJson.results)
     }
 
@@ -241,10 +258,16 @@ export default function RenterDashboard(){
 
     function handleClearFilters(){
       setFilter({ minPrice: '', maxPrice: '',
-      rating: '', amenities: '', startDate: '', endDate: '', postalCode: '' })
+      rating: '', amenities: [], startDate: '', endDate: '', postalCode: '' })
     }
 
-    function renderFilters(){
+    function handleChangeAmenities(newValue: any, actionMeta: any){
+      if(newValue) {
+        setFilter({...filters, amenities: newValue})
+      }
+    }
+
+    function renderFilters(){ 
       return(
         <div className='flex flex-col items-center gap-1 border-solid 
                       border-black border-2 rounded-md p-3'>
@@ -271,11 +294,15 @@ export default function RenterDashboard(){
                 className="border-solid border-2 rounded-md" placeholder='Max Price'/>
             </div>
           </div>
-          <div>
-            <label htmlFor="rating">Rating: </label>
+          <div className="flex flex-col">
+            <label htmlFor="rating">Min Rating: </label>
+            <input value = {filters.rating} onChange={e => setFilter({...filters, rating: e.target.value})}
+              className="border-solid border-2 rounded-md" placeholder='Min Rating'/>
           </div>
           <div>
             <label htmlFor="amenities">Amenities: </label>
+            <Select onChange={handleChangeAmenities}
+              options={allAmenities} isMulti/>
           </div>
           <div>
             <label>Date Range: </label>
@@ -358,9 +385,8 @@ export default function RenterDashboard(){
         <div className="flex flex-col gap-2 h-1/3 overflow-scroll">
             {
               searchResults.map((listing: any) => {
-                const distance = searchType == "LongLat" ? 
+                const distance = searchType == "LongLat" && listing.distance ? 
                                       listing.distance.toFixed(2) : 0
-                console.log(listing)
                 return ListingCard(listing.address, listing.city, listing.country, 
                   listing.postalCode, listing.longitude, listing.latitude, 
                   listing.price, listing.listingId, distance)
