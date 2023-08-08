@@ -391,6 +391,9 @@ export default function Listing() {
             <div>
               Price: {listing.price}
             </div>
+            <div>
+              Type: {listing.type}
+            </div>
         </div>
         <div>
           Rating: {listing.averageRating}

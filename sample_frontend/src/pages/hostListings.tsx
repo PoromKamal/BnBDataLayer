@@ -9,6 +9,7 @@ export default function HostListings() {
   const [longitude, setLongitude] = React.useState('')
   const [latitude, setLatitude] = React.useState('')
   const [price, setPrice] = React.useState('')
+  const [type, setType] = React.useState('')
   
   useEffect(() => {
     // Fetch all the listings
@@ -47,7 +48,8 @@ export default function HostListings() {
           postalCode: postalCode,
           longitude: longitude,
           latitude: latitude,
-          price: price
+          price: price,
+          type: type
           })
         })
     const listingJson = await listingData.json()
@@ -74,14 +76,19 @@ export default function HostListings() {
 
   const listingCard = (listingId: string, address: string,
     city: string, country: string, postalCode: string, longitude: string,
-    latitude: string, price: string) =>
+    latitude: string, price: string, type:string) =>
     (
       <div className="flex flex-col border-solid 
                       rounded-md border-black border-2
                       cursor-pointer"
           onClick={()=>{handleNavigateToListing(listingId)}}>
-        <div>
-          Address: {address}
+        <div className="flex justify-between">
+          <div>
+            Address: {address} 
+          </div>
+          <div>
+            Type: {type}
+          </div>
         </div>
         <div className="flex gap-2 p-1">
           <div>
@@ -133,6 +140,8 @@ export default function HostListings() {
           className="border-solid border-2 rounded-md" placeholder='Latitude'/>
         <input value={price} onChange={(e) => setPrice(e.target.value)}
           className="border-solid border-2 rounded-md" placeholder='Price'/>
+        <input value={type} onChange={(e) => setType(e.target.value)}
+          className="border-solid border-2 rounded-md" placeholder='Type'/>
         <button type="submit" className="border-solid border-2 rounded-md p-1">Add Listing</button>
       </form>
 
@@ -140,7 +149,7 @@ export default function HostListings() {
         Your listings (Click to view and edit):
         {listings.map((listing: any) => listingCard(listing.id, listing.address,
           listing.city, listing.country, listing.postalCode, listing.longitude,
-          listing.latitude, listing.price))}
+          listing.latitude, listing.price, listing.type))}
       </div>
     </div>
   )

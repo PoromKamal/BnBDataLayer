@@ -177,8 +177,9 @@ def insertListing():
   latitude = request.json['latitude']
   longitude = request.json['longitude']
   price = request.json['price']
+  type = request.json['type']
   result = Host.insert_one_listing(hostId, address, city, country, 
-                                   postalCode, latitude, longitude, price)
+                                   postalCode, latitude, longitude, price, type)
   if not result:
     return {"success": False, "message": "Listing already exists"}, 400
   return {"success": True, "message": "Listing added successfully"}
@@ -555,7 +556,7 @@ def load_in_demo_data():
       Host.insert_one_listing(i, listing['address'], listing['city'], 
                               listing['country'], listing['postalCode'], 
                               listing['latitude'], listing['longitude'], 
-                              listing['price'])
+                              listing['price'], listing['type'])
       listingId += 1
     ldIdx += 1
   

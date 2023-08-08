@@ -201,7 +201,8 @@ listingData = [
     "postalCode": "H9H0H0",
     "longitude": 33.045,
     "latitude": -71.012,
-    "price": 200
+    "price": 200,
+    "type": "apartment"
   },
   {
     "address": "456 Elm Ave",
@@ -210,7 +211,8 @@ listingData = [
     "postalCode": "H9H1H1",
     "longitude": 33.075,
     "latitude": -70.985,
-    "price": 350
+    "price": 350,
+    "type": "house"
   },
   {
     "address": "789 Maple Rd",
@@ -219,7 +221,8 @@ listingData = [
     "postalCode": "H9H2H2",
     "longitude": 32.963,
     "latitude": -71.108,
-    "price": 280
+    "price": 280,
+    "type": "semi"
   },
   {
     "address": "234 Cedar St",
@@ -228,7 +231,8 @@ listingData = [
     "postalCode": "H9H3H3",
     "longitude": 32.978,
     "latitude": -71.054,
-    "price": 42
+    "price": 42,
+    "type": "apartment"
   },
   {
     "address": "567 Pine Rd",
@@ -237,7 +241,8 @@ listingData = [
     "postalCode": "H9H4H4",
     "longitude": 33.033,
     "latitude": -71.101,
-    "price": 50
+    "price": 50,
+    "type": "house"
   },
   {
     "address": "789 Willow Ave",
@@ -246,7 +251,8 @@ listingData = [
     "postalCode": "H9H5H5",
     "longitude": 32.992,
     "latitude": -71.040,
-    "price": 320
+    "price": 320,
+    "type": "semi"
   },
   {
     "address": "123 Rose St",
@@ -255,7 +261,8 @@ listingData = [
     "postalCode": "H9H6H6",
     "longitude": 33.019,
     "latitude": -71.085,
-    "price": 370
+    "price": 370,
+    "type": "apartment"
   },
   {
     "address": "456 Birch Rd",
@@ -264,7 +271,8 @@ listingData = [
     "postalCode": "H9H7H7",
     "longitude": 33.060,
     "latitude": -70.990,
-    "price": 29
+    "price": 29,
+    "type": "house"
   },
   {
     "address": "789 Willow St",
@@ -273,7 +281,8 @@ listingData = [
     "postalCode": "H9H8H8",
     "longitude": 33.000,
     "latitude": -71.131,
-    "price": 410
+    "price": 410,
+    "type": "semi"
   },
   {
     "address": "567 Lake Rd",
@@ -282,7 +291,8 @@ listingData = [
     "postalCode": "H9H9H9",
     "longitude": 32.951,
     "latitude": -71.063,
-    "price": 380
+    "price": 380,
+    "type": "apartment"
   },
   {
     "address": "789 Park Lane",
@@ -291,7 +301,8 @@ listingData = [
     "postalCode": "A1A1A1",
     "longitude": 33.012345,
     "latitude": -70.968765,
-    "price": 725
+    "price": 725,
+    "type": "house"
   },
   {
     "address": "123 Forest Ave",
@@ -300,7 +311,8 @@ listingData = [
     "postalCode": "A2A2A2",
     "longitude": 33.009876,
     "latitude": -71.031234,
-    "price": 825
+    "price": 825,
+    "type": "apartment"
   },
   {
     "address": "456 Ocean Rd",
@@ -309,7 +321,8 @@ listingData = [
     "postalCode": "A3A3A3",
     "longitude": 33.080123,
     "latitude": -71.027589,
-    "price": 550
+    "price": 550,
+    "type": "semi"
   },
   {
     "address": "789 Mountain View Dr",
@@ -318,7 +331,8 @@ listingData = [
     "postalCode": "A4A4A4",
     "longitude": 33.050678,
     "latitude": -70.981234,
-    "price": 620
+    "price": 620,
+    "type": "apartment"
   },
   {
     "address": "123 River Ave",
@@ -327,7 +341,8 @@ listingData = [
     "postalCode": "A5A5A5",
     "longitude": 33.020123,
     "latitude": -70.993456,
-    "price": 510
+    "price": 510,
+    "type": "house"
   },
   {
     "address": "456 Meadow Ln",
@@ -336,7 +351,8 @@ listingData = [
     "postalCode": "A6A6A6",
     "longitude": 32.998765,
     "latitude": -71.017890,
-    "price": 690
+    "price": 690,
+    "type": "apartment"
   },
   {
     "address": "789 Sunset Blvd",
@@ -345,7 +361,8 @@ listingData = [
     "postalCode": "A7A7A7",
     "longitude": 33.031234,
     "latitude": -71.073456,
-    "price": 710
+    "price": 710,
+    "type": "semi"
   },
   {
     "address": "123 Lakeview Rd",
@@ -354,7 +371,8 @@ listingData = [
     "postalCode": "A8A8A8",
     "longitude": 33.065432,
     "latitude": -70.955678,
-    "price": 580
+    "price": 580,
+    "type": "house"
   },
   {
     "address": "456 Hilltop Ave",
@@ -363,7 +381,8 @@ listingData = [
     "postalCode": "A9A9A9",
     "longitude": 33.044321,
     "latitude": -70.999012,
-    "price": 670
+    "price": 670,
+    "type": "apartment"
   },
   {
     "address": "789 Valley Rd",
@@ -372,7 +391,8 @@ listingData = [
     "postalCode": "B0B0B0",
     "longitude": 33.027589,
     "latitude": -70.945678,
-    "price": 720
+    "price": 720,
+    "type": "semi"
   },
   {
     "address": "123 Ocean View",
@@ -381,7 +401,8 @@ listingData = [
     "postalCode": "B1B1B1",
     "longitude": 33.015678,
     "latitude": -71.082345,
-    "price": 590
+    "price": 590,
+    "type": "house"
   },
   {
     "address": "456 Mountain Rd",
@@ -390,7 +411,8 @@ listingData = [
     "postalCode": "B2B2B2",
     "longitude": 33.035432,
     "latitude": -70.974567,
-    "price": 670
+    "price": 670,
+    "type": "apartment"
   },
   {
     "address": "789 Lakeside Ave",
@@ -399,7 +421,8 @@ listingData = [
     "postalCode": "B3B3B3",
     "longitude": 33.045678,
     "latitude": -71.012345,
-    "price": 550
+    "price": 550,
+    "type": "semi"
   },
   {
     "address": "123 Hilltop Dr",
@@ -408,7 +431,8 @@ listingData = [
     "postalCode": "B4B4B4",
     "longitude": 32.999012,
     "latitude": -70.991234,
-    "price": 750
+    "price": 750,
+    "type": "house"
   },
   {
     "address": "456 Valley View",
@@ -417,7 +441,8 @@ listingData = [
     "postalCode": "B5B5B5",
     "longitude": 33.025678,
     "latitude": -70.961234,
-    "price": 620
+    "price": 620,
+    "type": "apartment"
   },
   {
     "address": "789 Riverside Rd",
@@ -426,7 +451,8 @@ listingData = [
     "postalCode": "B6B6B6",
     "longitude": 33.019012,
     "latitude": -70.998765,
-    "price": 680
+    "price": 680,
+    "type": "semi"
   },
   {
     "address": "123 Meadow Ln",
@@ -435,7 +461,8 @@ listingData = [
     "postalCode": "B7B7B7",
     "longitude": 33.055432,
     "latitude": -71.020123,
-    "price": 710
+    "price": 710,
+    "type": "house"
   },
   {
     "address": "456 Sunset Blvd",
@@ -444,7 +471,8 @@ listingData = [
     "postalCode": "B8B8B8",
     "longitude": 33.030123,
     "latitude": -71.065432,
-    "price": 570
+    "price": 570,
+    "type": "apartment"
   },
   {
     "address": "789 Forest Ave",
@@ -453,7 +481,8 @@ listingData = [
     "postalCode": "B9B9B9",
     "longitude": 33.000123,
     "latitude": -70.980123,
-    "price": 720
+    "price": 720,
+    "type": "semi"
   },
   {
     "address": "123 Ocean Rd",
@@ -462,9 +491,11 @@ listingData = [
     "postalCode": "C0C0C0",
     "longitude": 33.081234,
     "latitude": -70.952345,
-    "price": 650
+    "price": 650,
+    "type": "house"
   }
 ]
+print(len(listingData))
 
 ratingData = [
     {"rating": 3, "comment": "Average stay, nothing special."},

@@ -218,7 +218,7 @@ export default function RenterDashboard(){
 
     const ListingCard = (address: string , city: string, country: string, 
       postalCode:string, longitude: string, latitude: string, 
-      price:string, listingId:string, distance: string) => (
+      price:string, listingId:string, distance: string, type:string) => (
       <div className="flex flex-col border-solid 
                       rounded-md border-black border-2
                       cursor-pointer"
@@ -246,6 +246,9 @@ export default function RenterDashboard(){
             </div>
             <div>
               Price: {price}
+            </div>
+            <div>
+              Type: {type}
             </div>
         </div>
         {
@@ -398,7 +401,7 @@ export default function RenterDashboard(){
                 console.log(listing)
                 return ListingCard(listing.address, listing.city, listing.country, 
                   listing.postalCode, listing.longitude, listing.latitude, 
-                  listing.price, listing.id, distance)
+                  listing.price, listing.id, distance, listing.type)
               })
             }
         </div>

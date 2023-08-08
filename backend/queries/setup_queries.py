@@ -102,6 +102,7 @@ create_host_table = '''
 create_listing_table = '''
   CREATE TABLE IF NOT EXISTS Listings (
     id INT AUTO_INCREMENT,
+    type VARCHAR(100) NOT NULL,
     hostId INT NOT NULL,
     address VARCHAR(100) NOT NULL,
     city VARCHAR(100) NOT NULL,
