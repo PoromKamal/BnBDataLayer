@@ -12,7 +12,7 @@ export default function Listing() {
   const [listingId, setListingId] = React.useState('')
   const [reviews, setReviews] = React.useState([])
   const [bookings, setBookings] = React.useState([])
-  const [availabilities, setAvailabilities] = React.useState([])
+  const [availabilities, setAvailabilities] = React.useState([] as any[])
   const [newAvailability, setNewAvailability] = React.useState({startDate: '', endDate: ''})
   const [role, setRole] = React.useState('' as string)
   const [recommendedAmenities, setRecommendedAmenities] = React.useState([] as { value: any; label: any }[])
@@ -69,20 +69,93 @@ export default function Listing() {
     setAvailabilities(new_availabilities)
   }
 
-  const AvailabilityCard = (listing_id: string, date: string) => {
+  const handleUpdateAvailPrice = async (date: string) =>{
+    const newPrice = availabilities.filter((avail: any) => avail.date === date)[0].price
+    if(newPrice === '') {
+      alert('Price cannot be empty')
+      return
+    }
+
+    const dateObj = new Date(date)
+    const processedDate = dateObj.toISOString().split('T')[0]
+
+    const updateResult = await fetch('http://localhost:5000/updateAvailabilityPrice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({listingId: listingId, date: processedDate, price: newPrice})
+    })
+
+    const updateJson = await updateResult.json()
+    if(!updateJson.success) {
+      alert('Failed to update availability price')
+      return
+    }
+    
+    // Refetch availabilities
+    const availabilityData = await fetch('http://localhost:5000/getAvailabilitiesByListingId?id='
+                                + listingId)  
+    const availabilityJson = await availabilityData.json()
+    // Remove Time from date
+    availabilityJson.availabilities.forEach((avail: any) => {
+      avail.date = avail.date.replace('00:00:00 GMT', '')
+    }
+    )
+    setAvailabilities(availabilityJson.availabilities)
+  }
+
+  const updateAvailabilityPriceState = (newPrice: string, date: string) => {
+    const newAvailabilities = availabilities.map((avail: any) => {
+      if(avail.date === date) {
+        avail.price = newPrice
+      }
+      return avail
+    })
+    setAvailabilities(newAvailabilities)
+  }
+
+  const AvailabilityCard = (listing_id: string, date: string, isAvail: string, price: string) => {
+    let currPrice = price
+    const availabilityPrice = availabilities.filter((avail: any) => avail.date === date)
+    if(availabilityPrice.length > 0) {
+      currPrice = availabilityPrice[0].price
+    }
     return(
-      <div className="flex items-center 
+      <div className="flex flex-col items-center justify-center
                       gap-1 border-solid border-black border-2 p-2 rounded-md">
         <div>
           {date}
         </div>
         <div>
+          Available: {isAvail}
+          {
+            isAvail == '1' &&
+            <div>
+              <input className = "border-solid border-black border-2 rounded-md p-1"
+                onChange = {(e) => updateAvailabilityPriceState(e.target.value, date)}
+                value={currPrice} id=""/>
+            </div>
+          }
+        </div>
+        <div>
           {
             role === 'host' &&
-            <button onClick={()=>{handleRemoveAvail(listing_id, date)}}
-              className="border-solid border-black border-2 rounded-md p-1">
-              Delete
-            </button>
+            <div className="flex gap-1 justify-between">
+              {
+                isAvail == '1' &&
+                <button onClick={()=>{handleUpdateAvailPrice(date)}}
+                className="border-solid border-black border-2 rounded-md p-1">
+                  Set Price
+                </button>
+              }
+
+              <button onClick={()=>{handleRemoveAvail(listing_id, date)}}
+                className="border-solid border-black border-2 rounded-md p-1">
+                Delete
+              </button>
+            </div>
+
           }
         </div>
       </div>
@@ -457,7 +530,8 @@ export default function Listing() {
 
         <div className="flex flex-col gap-1 items-center max-h-56 overflow-scroll">
           All Availabilities:
-          {availabilities.map((avail: any) => AvailabilityCard(avail.listing_id, avail.date))}
+          {availabilities.map((avail: any) => AvailabilityCard(avail.listing_id, avail.date, avail.isAvail
+                                                              , avail.price))}
         </div>
       </div>
 

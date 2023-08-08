@@ -256,6 +256,38 @@ class Host:
     cursor.close()
     mysqlConn.commit()
 
+  @staticmethod
+  def update_availability_price (listing_id, date, newPrice):
+    mysqlConn = Host.get_mysql_connection()
+    cursor = mysqlConn.cursor()
+
+    # Check if the listing is available (not booked)
+    query = '''
+      SELECT * FROM Availability
+      WHERE listing_id = %s AND date = %s
+      AND isAvail = 1
+    '''
+    values = (listing_id, date)
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    if result is None:
+      cursor.close()
+      mysqlConn.close()
+      return False
+
+    query = '''
+      UPDATE Availability
+      SET price = %s
+      WHERE listing_id = %s AND date = %s
+    '''
+    values = (newPrice, listing_id, date)
+    cursor.execute(query, values)
+    cursor.close()
+    mysqlConn.commit()
+    mysqlConn.close()
+    return True
+
+
   """
   Remove an availability from the availability table
   """

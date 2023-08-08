@@ -168,8 +168,32 @@ create_availability_table = '''
   CREATE TABLE IF NOT EXISTS Availability (
       listing_id INT NOT NULL,
       date DATE NOT NULL,
+      isAvail BOOLEAN NOT NULL,
+      price DECIMAL(10, 2) NOT NULL,
       PRIMARY KEY (listing_id, date)
   );
+  CREATE TRIGGER initailize_price
+    BEFORE INSERT ON Availability
+    FOR EACH ROW
+    BEGIN
+      SET NEW.price = (SELECT price FROM Listings WHERE id = NEW.listing_id);
+    END;
+
+  CREATE TRIGGER set_isAvail
+    BEFORE INSERT ON Availability
+    FOR EACH ROW
+    BEGIN
+      IF NOT EXISTS(
+        SELECT 1
+        FROM Bookings
+        WHERE listing_id = NEW.listing_id AND
+        NEW.date BETWEEN start_date AND end_date
+        ) THEN
+        SET NEW.isAvail = TRUE;
+      ELSE
+        SET NEW.isAvail = FALSE;
+      END IF;
+    END;
 '''
 
 create_booking_table = '''
@@ -193,7 +217,12 @@ create_booking_table = '''
     BEFORE INSERT ON Bookings
     FOR EACH ROW
     BEGIN
-      SET NEW.price_paid = (SELECT price FROM Listings WHERE id = NEW.listing_id) * (DATEDIFF(NEW.end_date, NEW.start_date) + 1);
+      SET NEW.price_paid = (
+        SELECT SUM(price)
+        FROM Availability
+        WHERE listing_id = NEW.listing_id AND
+        NEW.start_date <= date AND date <= NEW.end_date
+      );
     END;
   CREATE TRIGGER before_delete_booking
     BEFORE DELETE ON Bookings
@@ -201,6 +230,15 @@ create_booking_table = '''
     BEGIN
       DELETE FROM Cancellations
       WHERE booking_id = OLD.id;
+    END;
+  CREATE TRIGGER update_availability
+    AFTER INSERT ON Bookings
+    FOR EACH ROW
+    BEGIN
+      UPDATE Availability
+      SET isAvail = FALSE
+      WHERE listing_id = NEW.listing_id AND
+      NEW.start_date <= date AND date <= NEW.end_date;
     END;
 '''
 
@@ -336,6 +374,26 @@ create_cancellation_table = '''
       ON UPDATE NO ACTION
       ON DELETE NO ACTION
   );
+  CREATE TRIGGER update_availability_after_cancellation
+    AFTER INSERT ON Cancellations
+    FOR EACH ROW
+    BEGIN
+      UPDATE Availability
+      SET isAvail = TRUE
+      WHERE date BETWEEN (
+        SELECT start_date
+        FROM Bookings
+        WHERE id = NEW.booking_id
+      ) AND (
+        SELECT end_date
+        FROM Bookings
+        WHERE id = NEW.booking_id
+      ) AND listing_id = (
+        SELECT listing_id
+        FROM Bookings
+        WHERE id = NEW.booking_id
+      );
+    END;
 '''
 
 setup_queries = [

@@ -354,6 +354,17 @@ def deleteRenter():
           "message": "Host does not exist"}, 400
   return {"message": "Host deleted successfully", "success": True}
 
+@app.route("/updateAvailabilityPrice", methods=['POST'])
+@cross_origin(origin="*")
+def updateAvailabilityPrice():
+  listingId = request.json['listingId']
+  date = request.json['date']
+  price = request.json['price']
+  success = Host.update_availability_price(listingId, date, price)
+  if(not success):
+    return {"success": False, 
+          "message": "Availability cannot be updated"}, 403
+  return {"message": "Availability updated successfully", "success": True}
 
 @app.route("/searchByLongLat", methods=['GET'])
 @cross_origin(origin="*")
