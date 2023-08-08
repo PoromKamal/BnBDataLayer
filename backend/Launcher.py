@@ -4,7 +4,6 @@ from flask import Flask, request
 import mysql.connector
 from queries import setup_queries
 from models import Renter, Host, Reports
-from utils.SearchFilters import SearchFilters
 from flask_cors import CORS, cross_origin
 
 import DemoData
@@ -332,6 +331,8 @@ def insertRenterRating():
   if(not(renterId and hostId and rating and comment)):
     return {"success": False, 
           "message": "Missing required fields"}, 400
+  return {"success": True,
+          "message": "Added Comment!"}
 
 @app.route("/deleteHost", methods=['DELETE'])
 @cross_origin(origin="*")

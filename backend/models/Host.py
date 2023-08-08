@@ -594,7 +594,7 @@ class Host:
     if(len(betterPerformingListings) > 0):
       averagePrice = 0
       for listing in betterPerformingListings:
-        averagePrice += listing['revenue']
+        averagePrice += listing['price']
       averagePrice /= len(betterPerformingListings)
       recommendedPrice = averagePrice
 

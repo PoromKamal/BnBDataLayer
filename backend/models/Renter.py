@@ -408,8 +408,7 @@ class Renter:
   def build_search_query(base_query, baseValues, filters):
     if len(filters['price_range']) == 2 \
       and filters['price_range'][0] != None \
-      and filters['price_range'][1] != None \
-      and filters['price_range'][0] <= filters['price_range'][1]:
+      and filters['price_range'][1] != None:
       base_query += " AND price >= %s AND price <= %s"
       baseValues += (filters['price_range'][0], filters['price_range'][1])
 
