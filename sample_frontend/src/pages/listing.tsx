@@ -5,7 +5,7 @@ import { ValueType } from "tailwindcss/types/config"
 
 export default function Listing() {
   const [listing, setListing] = React.useState({address: '', city: '',
-  country: '', postalCode: '', longitude: '', latitude: '', price: '', averageRating: ''})
+  country: '', postalCode: '', longitude: '', latitude: '', price: '', averageRating: '', type: ''})
   const [amenities, setAmenities] = React.useState([] as { value: any; label: any }[])
   const [allAmenities, setAllAmenities] = React.useState([] as { value: any; label: any }[])
   const [amenitiesLoaded, setAmenitiesLoaded] = React.useState(false)

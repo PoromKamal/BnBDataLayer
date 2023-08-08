@@ -74,45 +74,77 @@ export default function HostListings() {
     setListings(listingsJson.listings)
   }
 
+  const handleDeleteListing = async (listingId: string) => {
+    const deleteResult = await fetch('http://localhost:5000/removeListing', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          listingId: listingId
+          })
+        })
+    const deleteJson = await deleteResult.json()
+    if(deleteJson.success) {
+      alert('Listing deleted successfully')
+    }
+    else {
+      alert('Error deleting listing')
+    }
+    // Refetch listings
+    const userId = localStorage.getItem('userId')
+    const listings = await fetch('http://localhost:5000/getAllListings?hostId='
+                              + userId) 
+    const listingsJson = await listings.json()
+    setListings(listingsJson.listings)
+  }
+
   const listingCard = (listingId: string, address: string,
     city: string, country: string, postalCode: string, longitude: string,
     latitude: string, price: string, type:string) =>
     (
-      <div className="flex flex-col border-solid 
-                      rounded-md border-black border-2
-                      cursor-pointer"
-          onClick={()=>{handleNavigateToListing(listingId)}}>
-        <div className="flex justify-between">
-          <div>
-            Address: {address} 
-          </div>
-          <div>
-            Type: {type}
-          </div>
-        </div>
-        <div className="flex gap-2 p-1">
-          <div>
-            City: {city}
-          </div>
-          <div>
-            Country: {country}
-          </div>
-          <div>
-            Postal Code: {postalCode}
-          </div>
-        </div>
-        <div className="flex gap-2 p-1">
+      <div>
+        <div className="flex flex-col border-solid 
+                        rounded-md border-black border-2
+                        cursor-pointer"
+            onClick={()=>{handleNavigateToListing(listingId)}}>
+          <div className="flex justify-between">
             <div>
-              Longitude: {longitude}
+              Address: {address} 
             </div>
             <div>
-              Latitude: {latitude}
+              Type: {type}
+            </div>
+          </div>
+          <div className="flex gap-2 p-1">
+            <div>
+              City: {city}
             </div>
             <div>
-              Price: {price}
+              Country: {country}
             </div>
+            <div>
+              Postal Code: {postalCode}
+            </div>
+          </div>
+          <div className="flex gap-2 p-1">
+              <div>
+                Longitude: {longitude}
+              </div>
+              <div>
+                Latitude: {latitude}
+              </div>
+              <div>
+                Price: {price}
+              </div>
+          </div>
         </div>
+        <button onClick={() => handleDeleteListing(listingId)}
+          className="hover:bg-red-500 border-solid border-2 rounded-md p-1">
+          Delete Listing
+        </button>
       </div>
+      
       )
   
   return (

@@ -262,6 +262,16 @@ def removeListingAmenity():
           "message": "Amenity does not exist for this listing"}, 400
   return {"message": "Amenity removed successfully", "success": True}
 
+@app.route("/removeListing", methods=['DELETE'])
+@cross_origin(origin="*")
+def removeListing():
+  listingId = request.json['listingId']
+  success = Host.remove_one_listing(listingId)
+  if(not success):
+    return {"success": False, 
+          "message": "Listing does not exist"}, 400
+  return {"message": "Listing removed successfully", "success": True}
+
 @app.route("/getReviewsOfRenter", methods=['GET'])
 @cross_origin(origin="*")
 def getReviewsOfRenter():

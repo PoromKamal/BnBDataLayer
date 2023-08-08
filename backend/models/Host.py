@@ -239,6 +239,7 @@ class Host:
     cursor.close()
     mysqlConn.commit()
     mysqlConn.close()
+    return True
 
   """
   Insert a new availability into the availability table

@@ -495,7 +495,6 @@ listingData = [
     "type": "house"
   }
 ]
-print(len(listingData))
 
 ratingData = [
     {"rating": 3, "comment": "Average stay, nothing special."},

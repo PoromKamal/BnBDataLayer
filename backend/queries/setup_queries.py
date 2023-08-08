@@ -149,6 +149,19 @@ create_listing_table = '''
     CHECK (longitude >= -180 AND longitude <= 180),
     CHECK (latitude >= -90 AND latitude <= 90)
   );
+  CREATE TRIGGER before_delete_listing
+    BEFORE DELETE ON Listings
+    FOR EACH ROW
+    BEGIN
+      DELETE FROM ListingRatings
+      WHERE listing_id = OLD.id;
+      DELETE FROM ListingAmenities
+      WHERE listing_id = OLD.id;
+      DELETE FROM Availability
+      WHERE listing_id = OLD.id;
+      DELETE FROM Bookings
+      WHERE listing_id = OLD.id;
+    END;
 '''
 
 create_availability_table = '''
