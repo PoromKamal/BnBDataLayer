@@ -79,7 +79,15 @@ create_renter_table = '''
       DELETE FROM Cancellations
       WHERE renter_id = OLD.id;
     END;
-  
+  CREATE TRIGGER check_age_greater_than_18
+    BEFORE INSERT ON Renters
+    FOR EACH ROW
+    BEGIN
+      IF DATEDIFF(CURDATE(), NEW.dateOfBirth) < 18 * 365 THEN
+        SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'Renter must be at least 18 years old';
+      END IF;
+    END;
 '''
 
 create_host_table = '''
@@ -97,6 +105,26 @@ create_host_table = '''
     UNIQUE (SIN),
     PRIMARY KEY (id)
   );
+  CREATE TRIGGER check_age_greater_than_18_host
+    BEFORE INSERT ON Hosts
+    FOR EACH ROW
+    BEGIN
+      IF DATEDIFF(CURDATE(), NEW.dateOfBirth) < 18 * 365 THEN
+        SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'Host must be at least 18 years old';
+      END IF;
+    END;
+  CREATE TRIGGER before_delete_host
+    BEFORE DELETE ON Hosts
+    FOR EACH ROW  
+    BEGIN
+      DELETE FROM Listings
+      WHERE hostId = OLD.id;
+      DELETE FROM RenterRatings
+      WHERE host_id = OLD.id;
+      DELETE FROM Cancellations
+      WHERE host_id = OLD.id;
+    END;
 '''
 
 create_listing_table = '''
